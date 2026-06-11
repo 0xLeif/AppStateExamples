@@ -57,6 +57,15 @@ The **WASM** example needs the SwiftWasm SDK — see [`packages/wasm/README.md`]
 cd apps/SwiftUIDemo && xcodegen generate && open SwiftUIDemo.xcodeproj
 ```
 
+## Platform support
+
+**Apple platforms (iOS/macOS/tvOS/watchOS) are fully supported and gate CI.** Building these examples surfaced real gaps in AppState 3.0's non-Apple support, which are filed upstream and tracked here:
+
+- **WebAssembly** — AppState doesn't yet build for wasm ([AppState#149](https://github.com/0xLeif/AppState/issues/149)); the `wasm-example` cross-compile is best-effort until it does.
+- **Linux** — collection-typed state (`State<[T]>`, `FileState<[T]?>`) crashes at runtime ([AppState#151](https://github.com/0xLeif/AppState/issues/151)), headless observation delivery is Apple-only ([AppState#150](https://github.com/0xLeif/AppState/issues/150)), and the Swift 6.1.0 Linux toolchain mis-links Observation into a Vapor binary. The Linux/WASM CI jobs are therefore **informational** (`continue-on-error`) until those land.
+
+Scalar state and dependency injection work on Linux today; the examples will tighten their Linux guarantees as the upstream issues close.
+
 ## CI
 
-GitHub Actions builds and tests every example on its native toolchain — macOS, Linux, WebAssembly, and an iOS/macOS compile of the SwiftUI app. See [`.github/workflows`](.github/workflows).
+GitHub Actions builds and tests every example on its native toolchain — macOS (the gate), plus informational Linux, WebAssembly, and an iOS/macOS compile of the SwiftUI app. See [`.github/workflows`](.github/workflows).

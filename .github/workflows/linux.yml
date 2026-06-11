@@ -10,6 +10,11 @@ jobs:
   packages:
     name: ${{ matrix.package }} (Linux)
     runs-on: ubuntu-latest
+    # Informational: AppState 3.0's Linux support has open upstream bugs that these examples
+    # surface — collection-typed state crashes (0xLeif/AppState#151), observation delivery is
+    # Apple-only (#150), and the Swift 6.1.0 Linux toolchain mis-links libswiftObservation when
+    # building a Vapor executable. macOS is the gating workflow until those land.
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
