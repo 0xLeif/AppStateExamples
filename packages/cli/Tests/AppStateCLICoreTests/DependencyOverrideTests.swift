@@ -33,7 +33,6 @@ final class DependencyOverrideTests: XCTestCase {
 
     @MainActor
     override func setUp() async throws {
-        try await super.setUp()
         var itemsState = Application.fileState(\.items)
         itemsState.value = []
         var counterState = Application.storedState(\.totalItemsAdded)

@@ -76,7 +76,10 @@ Factory signatures (instance methods on `Application`):
 
 ```swift
 let value = Application.state(\.counter).value         // read (registers observation)
-Application.state(\.counter).value = 5                 // write (must be on main thread)
+var counter = Application.state(\.counter)             // write: bind to a var first —
+counter.value = 5                                      // `Application.state(_:).value = x` won't
+                                                       // compile (assignment to a temporary).
+                                                       // Mutations must run on the main thread.
 let clock = Application.dependency(\.clock)            // resolve a dependency
 Application.logging(isEnabled: true)
 let token = Application.override(\.clock, with: MockClock()); token.cancel()  // testing

@@ -78,7 +78,6 @@ final class AppStateObservabilityTests: XCTestCase {
     // MARK: - Setup / Teardown
 
     override func setUp() async throws {
-        try await super.setUp()
         // Reset shared state to known baselines before each test.
         AppStateMutation.setCounter(0)
         AppStateMutation.setTemperature(20.0)

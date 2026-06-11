@@ -43,7 +43,6 @@ final class HeadlessObservationTests: XCTestCase {
 
     @MainActor
     override func setUp() async throws {
-        try await super.setUp()
         var selectionState = Application.state(\.selectedItemIndex)
         selectionState.value = nil
         var itemsState = Application.fileState(\.items)

@@ -69,7 +69,6 @@ final class AppStateVaporCoreTests: XCTestCase {
 
     /// Resets the AppState counters that tests modify so they don't leak between cases.
     override func setUp() async throws {
-        try await super.setUp()
         await MainActor.run {
             // Bind to `var` so the compiler accepts `.value = …` mutation.
             // The setter writes to Application.shared.cache, making the change durable.

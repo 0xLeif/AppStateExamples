@@ -16,7 +16,6 @@ final class CounterTests: XCTestCase {
 
     @MainActor
     override func setUp() async throws {
-        try await super.setUp()
         var counter = Application.state(\.counter)
         counter.value = 0
     }

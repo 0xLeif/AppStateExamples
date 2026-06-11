@@ -10,7 +10,6 @@ final class TaskCommandTests: XCTestCase {
 
     @MainActor
     override func setUp() async throws {
-        try await super.setUp()
         // Start each test with a clean slate.
         var itemsState = Application.fileState(\.items)
         itemsState.value = []
