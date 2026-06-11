@@ -12,24 +12,26 @@ The two things every example shows off:
 | Example | Platforms | What it shows |
 | --- | --- | --- |
 | [`packages/cli`](packages/cli) | macOS · Linux | A task-tracker CLI using `State`, `StoredState`, `FileState`, dependency injection, and a `watch` command that demonstrates headless observation. |
+| [`packages/tui`](packages/tui) | macOS · Linux | An interactive terminal **live dashboard** — keypresses mutate scalar state and the frame re-renders, reactively via `withObservationTracking` on Apple. |
 | [`packages/observability`](packages/observability) | macOS · Linux | The flagship deep-dive on 3.0 observation: re-arming, multiple observers, slices, `notifyChange()`, and an `AsyncStream` bridge over `withObservationTracking`. |
 | [`packages/vapor-example`](packages/vapor-example) | macOS · Linux | A [Vapor](https://vapor.codes) JSON API using AppState as its DI container, with shared config and a headless server-side metrics observer. |
 | [`packages/wasm`](packages/wasm) | WebAssembly | A browser counter/todo that drives the DOM from AppState observation via [JavaScriptKit](https://github.com/swiftwasm/JavaScriptKit). Pure logic lives in a host-testable `WASMCore` library. |
 | [`apps/SwiftUIDemo`](apps/SwiftUIDemo) | iOS · macOS | A SwiftUI catalog touring every state type, dependency injection + overrides, slices, SwiftData via `@ModelState`, and an observability panel proving observation works in and out of SwiftUI. |
+| [`apps/MenuBarDemo`](apps/MenuBarDemo) | macOS | A native menu-bar app (`MenuBarExtra`) driven by `@AppState`, `@StoredState`, `@SecureState` (Keychain), `@SyncState` (iCloud), and an overridable dependency. |
 
 ## Feature coverage
 
-| Feature | cli | observability | vapor | wasm | SwiftUI |
-| --- | :-: | :-: | :-: | :-: | :-: |
-| `@AppState` / `State` | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `StoredState` (UserDefaults) | ✅ | ✅ | ✅ | | ✅ |
-| `FileState` | ✅ | ✅ | | | ✅ |
-| `SyncState` (iCloud) | | | | | ✅ |
-| `SecureState` (Keychain) | | | | | ✅ |
-| Dependencies + overrides | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Slices | | ✅ | | | ✅ |
-| Headless observation † | ✅ | ✅ | ✅ | ✅ | ✅ |
-| SwiftData (`@ModelState`) | | | | | ✅ |
+| Feature | cli | tui | observability | vapor | wasm | SwiftUI | menubar |
+| --- | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
+| `@AppState` / `State` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `StoredState` (UserDefaults) | ✅ | ✅ | ✅ | ✅ | | ✅ | ✅ |
+| `FileState` | ✅ | | ✅ | | | ✅ | |
+| `SyncState` (iCloud) | | | | | | ✅ | ✅ |
+| `SecureState` (Keychain) | | | | | | ✅ | ✅ |
+| Dependencies + overrides | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Slices | | | ✅ | | | ✅ | |
+| Headless observation † | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| SwiftData (`@ModelState`) | | | | | | ✅ | |
 
 † Every example *uses* `withObservationTracking`, and the code compiles and runs on all platforms. The observation-*delivery* assertions (that `onChange` fires) are verified on Apple platforms only — matching AppState's own test suite, since the Observation runtime's synchronous delivery isn't guaranteed by swift-corelibs on Linux/Windows. The portable `State`/dependency logic is tested everywhere.
 
@@ -40,6 +42,9 @@ Each package is standalone — `cd` into it and use SwiftPM:
 ```bash
 # CLI
 cd packages/cli && swift run appstate-cli add "Ship 3.0" && swift run appstate-cli list
+
+# Interactive terminal dashboard (keys: i/d warmer/cooler w/c, p pause, r reset, q quit)
+cd packages/tui && swift run appstate-tui
 
 # Observability walkthrough
 cd packages/observability && swift run observability-demo

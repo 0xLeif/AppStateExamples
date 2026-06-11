@@ -1,0 +1,33 @@
+import SwiftUI
+import AppState
+
+// MARK: - MenuBarPopoverView
+
+/// Root popover content shown when the menu-bar icon is clicked.
+///
+/// Composes all feature sections and a quit button into a single scrollable form.
+internal struct MenuBarPopoverView: View {
+
+    // MARK: Body
+
+    internal var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                CounterSectionView()
+                Divider()
+                GreetingSectionView()
+                Divider()
+                SecureTokenSectionView()
+                Divider()
+                AccentSyncSectionView()
+                Divider()
+                DependencySectionView()
+                Divider()
+                QuitButtonView()
+            }
+            .padding(.vertical, 8)
+        }
+        .frame(width: 340)
+        .frame(maxHeight: 600)
+    }
+}
