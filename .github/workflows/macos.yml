@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package: [cli, observability, vapor-example, wasm, tui]
+        package: [cli, observability, vapor-example, wasm, tui, testing-showcase]
     steps:
       - uses: actions/checkout@v4
       - uses: maxim-lobanov/setup-xcode@v1
@@ -76,3 +76,46 @@ jobs:
             -destination 'platform=macOS' \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
         working-directory: apps/MenuBarDemo
+
+  pomodoro-app:
+    name: Pomodoro (xcodebuild)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Install xcodegen
+        run: brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate
+        working-directory: apps/Pomodoro
+      - name: Build macOS
+        run: |
+          xcodebuild build -project Pomodoro.xcodeproj -scheme "Pomodoro-macOS" \
+            -destination 'platform=macOS' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+        working-directory: apps/Pomodoro
+      - name: Build iOS (no signing)
+        run: |
+          xcodebuild build -project Pomodoro.xcodeproj -scheme "Pomodoro-iOS" \
+            -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+        working-directory: apps/Pomodoro
+
+  widget-app:
+    name: WidgetDemo (xcodebuild)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Install xcodegen
+        run: brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate
+        working-directory: apps/WidgetDemo
+      - name: Build iOS app + widget (no signing)
+        run: |
+          xcodebuild build -project WidgetDemo.xcodeproj -scheme "WidgetDemo" \
+            -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+        working-directory: apps/WidgetDemo

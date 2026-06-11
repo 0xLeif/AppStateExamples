@@ -14,10 +14,13 @@ The two things every example shows off:
 | [`packages/cli`](packages/cli) | macOS · Linux | A task-tracker CLI using `State`, `StoredState`, `FileState`, dependency injection, and a `watch` command that demonstrates headless observation. |
 | [`packages/tui`](packages/tui) | macOS · Linux | An interactive terminal **live dashboard** — keypresses mutate scalar state and the frame re-renders, reactively via `withObservationTracking` on Apple. |
 | [`packages/observability`](packages/observability) | macOS · Linux | The flagship deep-dive on 3.0 observation: re-arming, multiple observers, slices, `notifyChange()`, and an `AsyncStream` bridge over `withObservationTracking`. |
+| [`packages/testing-showcase`](packages/testing-showcase) | macOS · Linux | The definitive guide to **testing** AppState code — `Application.override`, dependency mocking, controllable clocks, error paths, and state isolation. The tests *are* the docs. |
 | [`packages/vapor-example`](packages/vapor-example) | macOS · Linux | A [Vapor](https://vapor.codes) JSON API using AppState as its DI container, with shared config and a headless server-side metrics observer. |
 | [`packages/wasm`](packages/wasm) | WebAssembly | A browser counter/todo that drives the DOM from AppState observation via [JavaScriptKit](https://github.com/swiftwasm/JavaScriptKit). Pure logic lives in a host-testable `WASMCore` library. |
+| [`apps/Pomodoro`](apps/Pomodoro) | iOS · macOS | A **real** Pomodoro timer — AppState used cohesively: live timer `State`, persisted `StoredState` settings/sessions, an injected `Ticker` dependency, and observation driving the per-second UI. |
 | [`apps/SwiftUIDemo`](apps/SwiftUIDemo) | iOS · macOS | A SwiftUI catalog touring every state type, dependency injection + overrides, slices, SwiftData via `@ModelState`, and an observability panel proving observation works in and out of SwiftUI. |
 | [`apps/MenuBarDemo`](apps/MenuBarDemo) | macOS | A native menu-bar app (`MenuBarExtra`) driven by `@AppState`, `@StoredState`, `@SecureState` (Keychain), `@SyncState` (iCloud), and an overridable dependency. |
+| [`apps/WidgetDemo`](apps/WidgetDemo) | iOS | A WidgetKit widget sharing `StoredState` with its host app across the process boundary via an **App Group** (AppState pointed at a shared `UserDefaults` suite). |
 
 ## Feature coverage
 

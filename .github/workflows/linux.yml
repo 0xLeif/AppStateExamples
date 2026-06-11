@@ -20,7 +20,7 @@ jobs:
       matrix:
         # SwiftUI / SwiftData / Keychain / iCloud are Apple-only, so those examples
         # do not appear here. The packages below use only the cross-platform core.
-        package: [cli, observability, vapor-example, wasm, tui]
+        package: [cli, observability, vapor-example, wasm, tui, testing-showcase]
     steps:
       # Use the toolchain action rather than the `swift:6.1` Docker image: that image
       # ships a broken libswiftObservation.so (undefined reference to swift::threading::fatal),

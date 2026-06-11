@@ -1,0 +1,69 @@
+name: WidgetDemo
+
+packages:
+  AppState:
+    url: https://github.com/0xLeif/AppState.git
+    exactVersion: 3.0.0-rc.1
+
+options:
+  bundleIdPrefix: com.0xleif
+  deploymentTarget:
+    iOS: "17.0"
+  defaultConfig: Debug
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    OTHER_SWIFT_FLAGS: -enable-experimental-feature StrictConcurrency
+
+targets:
+  WidgetDemo:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources/App
+      - path: Sources/Shared
+    dependencies:
+      - package: AppState
+        product: AppState
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.0xleif.AppStateWidgetDemo
+        INFOPLIST_FILE: Sources/App/Info.plist
+        TARGETED_DEVICE_FAMILY: "1,2"
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        CODE_SIGN_ENTITLEMENTS: SupportingFiles/WidgetDemo.entitlements
+
+  WidgetDemoWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Sources/Widget
+      - path: Sources/Shared
+    dependencies:
+      - package: AppState
+        product: AppState
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.0xleif.AppStateWidgetDemo.Widget
+        INFOPLIST_FILE: Sources/Widget/Info.plist
+        TARGETED_DEVICE_FAMILY: "1,2"
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        CODE_SIGN_ENTITLEMENTS: SupportingFiles/WidgetDemoWidget.entitlements
+
+schemes:
+  WidgetDemo:
+    build:
+      targets:
+        WidgetDemo: all
+        WidgetDemoWidget: all
+    run:
+      config: Debug
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
