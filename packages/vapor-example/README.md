@@ -126,3 +126,67 @@ feeding SwiftUI or `withObservationTracking` — prefer an `actor` like
 require a main-thread hop.
 
 Both patterns live side-by-side in `Routes.swift` so you can compare them directly.
+
+## Deployment
+
+### Docker
+
+Build the image and start the server with Docker Compose:
+
+```bash
+cd packages/vapor-example
+docker compose up --build
+```
+
+The server starts at `http://localhost:8080`.  Verify it is healthy:
+
+```bash
+curl http://localhost:8080/
+# {"appName":"AppState Vapor Example","totalRequests":1,"status":"ok"}
+```
+
+To stop the server:
+
+```bash
+docker compose down
+```
+
+> **Note on static linking**: the Dockerfile builds with `--static-swift-stdlib`
+> so the run image (`ubuntu:jammy`) needs no Swift runtime.  AppState uses
+> `libswiftObservation`; if you hit a link error mentioning `swiftObservation`
+> symbols on a particular Swift 6.1 toolchain image, switch the run stage to
+> `swift:6.1-jammy-slim` (dynamically-linked runtime included) and drop the
+> `--static-swift-stdlib` flag from the `swift build` command in the Dockerfile.
+
+### fly.io
+
+1. Install the [fly CLI](https://fly.io/docs/hands-on/install-flyctl/) and authenticate:
+
+   ```bash
+   fly auth login
+   ```
+
+2. From the `packages/vapor-example/` directory, initialise the app (accepts the
+   existing `fly.toml`, skips the first deploy):
+
+   ```bash
+   fly launch --no-deploy
+   ```
+
+3. Deploy:
+
+   ```bash
+   fly deploy
+   ```
+
+4. Smoke-test the live URL that `fly deploy` prints:
+
+   ```bash
+   curl https://appstate-vapor-example.fly.dev/
+   # {"appName":"AppState Vapor Example","totalRequests":1,"status":"ok"}
+   ```
+
+The `fly.toml` configures:
+- Internal port `8080` with `force_https` enabled.
+- Auto start/stop machines (scales to zero when idle).
+- A `/` health check every 30 s with a 10 s timeout.

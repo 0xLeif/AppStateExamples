@@ -1,0 +1,25 @@
+# fly.toml — fly.io deployment configuration for appstate-vapor-example
+# Deploy with: fly launch --no-deploy && fly deploy
+
+app = "appstate-vapor-example"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  LOG_LEVEL = "info"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    grace_period = "15s"
+    interval = "30s"
+    method = "GET"
+    path = "/"
+    timeout = "10s"

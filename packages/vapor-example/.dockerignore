@@ -1,0 +1,30 @@
+# Build artifacts — excluded to keep the Docker build context small and to
+# prevent macOS arm64 object files from landing in the Linux build stage.
+.build/
+
+# Git history — not needed inside the image.
+.git/
+.gitignore
+
+# Xcode project / workspace files.
+*.xcodeproj/
+*.xcworkspace/
+*.xcuserdata/
+
+# macOS metadata.
+.DS_Store
+**/.DS_Store
+
+# Editor / IDE directories.
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# fly.io and other deployment config (not needed at build time).
+fly.toml
+
+# Documentation and CI files that add no value inside the build stage.
+README.md
+*.md
+.github/
