@@ -1,0 +1,27 @@
+name: Linux
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  packages:
+    name: ${{ matrix.package }} (Linux)
+    runs-on: ubuntu-latest
+    container: swift:6.1-jammy
+    strategy:
+      fail-fast: false
+      matrix:
+        # SwiftUI / SwiftData / Keychain / iCloud are Apple-only, so those examples
+        # do not appear here. The packages below use only the cross-platform core.
+        package: [cli, observability, vapor-example, wasm]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build
+        working-directory: packages/${{ matrix.package }}
+      - name: Test
+        run: swift test
+        working-directory: packages/${{ matrix.package }}

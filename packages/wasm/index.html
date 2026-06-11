@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AppState 3.0 — WASM Demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      max-width: 560px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #f5f5f7;
+      color: #1d1d1f;
+    }
+
+    h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
+    h2 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+    p.subtitle { color: #6e6e73; font-size: 0.9rem; margin: 0 0 1.5rem; }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    /* Counter */
+    #counter-value {
+      font-size: 2rem;
+      font-weight: 700;
+      display: block;
+      margin: 0.5rem 0 1rem;
+    }
+
+    .btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+    button {
+      padding: 0.45rem 1.1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      background: #0071e3;
+      color: #fff;
+      transition: background 0.15s;
+    }
+    button:hover { background: #0077ed; }
+    button:active { background: #005bbf; }
+    button.secondary { background: #e5e5ea; color: #1d1d1f; }
+    button.secondary:hover { background: #d1d1d6; }
+    button.remove-btn {
+      padding: 0.2rem 0.6rem;
+      font-size: 0.8rem;
+      background: #ff3b30;
+      margin-left: 0.75rem;
+    }
+    button.remove-btn:hover { background: #e0352b; }
+
+    /* Todo list */
+    .todo-input-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .todo-input-row input {
+      flex: 1;
+      padding: 0.45rem 0.75rem;
+      border: 1px solid #d1d1d6;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
+
+    #todo-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    #todo-list li {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #f2f2f7;
+    }
+    #todo-list li:last-child { border-bottom: none; }
+    #todo-list li.empty-hint { color: #6e6e73; font-style: italic; }
+
+    footer {
+      font-size: 0.8rem;
+      color: #aeaeb2;
+      text-align: center;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>AppState 3.0 &#x2014; WASM Demo</h1>
+  <p class="subtitle">
+    AppState observation driving a browser UI via JavaScriptKit &#x2014; no SwiftUI required.
+  </p>
+
+  <!-- Counter section -->
+  <div class="card">
+    <h2>Counter</h2>
+    <span id="counter-value">Zero</span>
+    <div class="btn-row">
+      <button id="btn-increment">+ Increment</button>
+      <button id="btn-decrement">&#x2212; Decrement</button>
+      <button id="btn-reset" class="secondary">Reset</button>
+    </div>
+  </div>
+
+  <!-- Todo list section -->
+  <div class="card">
+    <h2>Todo List</h2>
+    <div class="todo-input-row">
+      <input id="todo-input" type="text" placeholder="New item&hellip;" />
+      <button id="btn-add-todo">Add</button>
+    </div>
+    <ul id="todo-list">
+      <li class="empty-hint">No items yet &#x2014; add one above!</li>
+    </ul>
+  </div>
+
+  <footer>
+    Built with Swift + AppState 3.0 + JavaScriptKit &#x2014; compiled to WebAssembly
+  </footer>
+
+  <!-- carton injects the wasm loader here -->
+  <script src="index.js"></script>
+</body>
+</html>

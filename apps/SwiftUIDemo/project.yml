@@ -1,0 +1,89 @@
+name: SwiftUIDemo
+
+packages:
+  AppState:
+    url: https://github.com/0xLeif/AppState.git
+    exactVersion: 3.0.0-rc.1
+
+options:
+  bundleIdPrefix: com.0xleif
+  deploymentTarget:
+    iOS: "17.0"
+    macOS: "14.0"
+  defaultConfig: Debug
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    OTHER_SWIFT_FLAGS: -enable-experimental-feature StrictConcurrency
+    ENABLE_TESTABILITY: YES
+
+targets:
+  SwiftUIDemo:
+    type: application
+    platform: [iOS, macOS]
+    sources:
+      - path: Sources
+    dependencies:
+      - package: AppState
+        product: AppState
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.0xleif.AppStateSwiftUIDemo
+        INFOPLIST_FILE: Sources/App/Info.plist
+        TARGETED_DEVICE_FAMILY: "1,2"
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+
+  SwiftUIDemoUITests:
+    type: bundle.ui-testing
+    platform: [iOS, macOS]
+    sources:
+      - path: UITests
+    dependencies:
+      - target: SwiftUIDemo_iOS
+        platform: iOS
+      - target: SwiftUIDemo_macOS
+        platform: macOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.0xleif.AppStateSwiftUIDemo.uitests
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+
+schemes:
+  SwiftUIDemo-iOS:
+    build:
+      targets:
+        SwiftUIDemo_iOS: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - SwiftUIDemoUITests_iOS
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
+
+  SwiftUIDemo-macOS:
+    build:
+      targets:
+        SwiftUIDemo_macOS: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - SwiftUIDemoUITests_macOS
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

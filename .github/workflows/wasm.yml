@@ -1,0 +1,36 @@
+name: WebAssembly
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  wasm-build:
+    name: wasm-example (SwiftWasm)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Installs a Swift SDK for WebAssembly and exposes a toolchain that can
+      # cross-compile to wasm32-unknown-wasi. See https://book.swiftwasm.org.
+      - name: Set up SwiftWasm
+        uses: swiftwasm/setup-swiftwasm@v2
+
+      - name: Build for wasm32-unknown-wasi
+        run: swift build --swift-sdk wasm32-unknown-wasi
+        working-directory: packages/wasm
+
+  wasm-core-host:
+    # The pure-logic WASMCore library and its tests run on a normal host toolchain,
+    # so they are verified here too (the browser executable is excluded on host via
+    # `#if canImport(JavaScriptKit)`).
+    name: WASMCore (host)
+    runs-on: ubuntu-latest
+    container: swift:6.1-jammy
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test WASMCore
+        run: swift test
+        working-directory: packages/wasm

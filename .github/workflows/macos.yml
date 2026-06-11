@@ -1,0 +1,56 @@
+name: macOS
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  packages:
+    name: ${{ matrix.package }} (SwiftPM)
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [cli, observability, vapor-example, wasm]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Build
+        run: swift build
+        working-directory: packages/${{ matrix.package }}
+      - name: Test
+        run: swift test
+        working-directory: packages/${{ matrix.package }}
+
+  swiftui-app:
+    name: SwiftUIDemo (xcodebuild)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Install xcodegen
+        run: brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate
+        working-directory: apps/SwiftUIDemo
+      - name: Build macOS
+        run: |
+          xcodebuild build \
+            -project SwiftUIDemo.xcodeproj \
+            -scheme "SwiftUIDemo-macOS" \
+            -destination 'platform=macOS'
+        working-directory: apps/SwiftUIDemo
+      - name: Build iOS (no signing)
+        run: |
+          xcodebuild build \
+            -project SwiftUIDemo.xcodeproj \
+            -scheme "SwiftUIDemo-iOS" \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+        working-directory: apps/SwiftUIDemo
