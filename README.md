@@ -28,8 +28,10 @@ The two things every example shows off:
 | `SecureState` (Keychain) | | | | | ✅ |
 | Dependencies + overrides | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Slices | | ✅ | | | ✅ |
-| Headless observation | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Headless observation † | ✅ | ✅ | ✅ | ✅ | ✅ |
 | SwiftData (`@ModelState`) | | | | | ✅ |
+
+† Every example *uses* `withObservationTracking`, and the code compiles and runs on all platforms. The observation-*delivery* assertions (that `onChange` fires) are verified on Apple platforms only — matching AppState's own test suite, since the Observation runtime's synchronous delivery isn't guaranteed by swift-corelibs on Linux/Windows. The portable `State`/dependency logic is tested everywhere.
 
 ## Running
 

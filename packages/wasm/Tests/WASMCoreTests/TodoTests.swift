@@ -117,6 +117,8 @@ final class TodoTests: XCTestCase {
 
     // MARK: - Observation
 
+    // Observation delivery is verified on Apple platforms only (see CounterTests).
+    #if !os(Linux) && !os(Windows)
     @MainActor
     func testTodosStateChangeFiresObservationCallback() async {
         let fired = FiredBox()
@@ -169,7 +171,10 @@ final class TodoTests: XCTestCase {
         XCTAssertEqual(observer.snapshots[0].count, 1)
         XCTAssertEqual(observer.snapshots[1].count, 2)
     }
+    #endif
 }
+
+#if !os(Linux) && !os(Windows)
 
 // MARK: - FiredBox
 
@@ -229,3 +234,5 @@ private final class RearmingTodoObserver {
         }
     }
 }
+
+#endif

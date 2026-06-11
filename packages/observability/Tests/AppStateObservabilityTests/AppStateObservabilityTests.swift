@@ -1,3 +1,4 @@
+#if !os(Linux) && !os(Windows)
 import AppState
 import AppStateObservability
 import Foundation
@@ -596,3 +597,4 @@ private final class RearmingLogCollector {
         }
     }
 }
+#endif

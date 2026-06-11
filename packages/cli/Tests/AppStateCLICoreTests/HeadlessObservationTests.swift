@@ -1,3 +1,4 @@
+#if !os(Linux) && !os(Windows)
 import XCTest
 import AppState
 import Observation
@@ -181,3 +182,4 @@ final class HeadlessObservationTests: XCTestCase {
         XCTAssertEqual(collector.lines.count, 6, "Expected 6 output lines. Got:\n\(combined)")
     }
 }
+#endif

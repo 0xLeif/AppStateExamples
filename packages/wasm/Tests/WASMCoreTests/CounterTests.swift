@@ -117,8 +117,13 @@ final class CounterTests: XCTestCase {
 
     // MARK: - Observation
 
+    // `withObservationTracking` delivery is verified on Apple platforms only, matching
+    // AppState's own test suite. The Observation runtime's synchronous `onChange` delivery
+    // is not guaranteed by swift-corelibs on Linux/Windows. The portable state and
+    // dependency logic above is exercised on every platform.
+    #if !os(Linux) && !os(Windows)
     @MainActor
-    func testCounterChangeFiresObservationCallback() async {
+    func testCounterChangeFiresObservationCallback() {
         let fired = FiredBox()
 
         withObservationTracking {
@@ -128,14 +133,15 @@ final class CounterTests: XCTestCase {
         }
 
         AppActions.increment()
-        await Task.yield()
 
         XCTAssertEqual(fired.count, 1)
     }
+    #endif
 }
 
 // MARK: - FiredBox
 
+#if !os(Linux) && !os(Windows)
 /// Thread-safe counter for capturing `withObservationTracking` reactions from a
 /// `@Sendable` `onChange` closure.
 private final class FiredBox: @unchecked Sendable {
@@ -154,6 +160,7 @@ private final class FiredBox: @unchecked Sendable {
         return value
     }
 }
+#endif
 
 // MARK: - MockFormatter
 
