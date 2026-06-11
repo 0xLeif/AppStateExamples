@@ -28,20 +28,36 @@ A live terminal dashboard powered by **AppState 3.0**, demonstrating reactive UI
 ## Running
 
 ```
-swift run appstate-tui
+swift run appstate-tui          # interactive dashboard
+swift run appstate-tui demo     # non-interactive observation proof
 ```
 
 From the package directory (`packages/tui/`).
 
+The interactive loop applies exactly one command per keypress and re-renders
+synchronously, so it is deterministic under scripted/piped input:
+
+```
+$ printf 'i\ni\ni\nw\nq\n' | swift run appstate-tui | grep 'Counter :' | tail -1
+│Counter : 3                                     │
+```
+
 ## Live observation note
 
-On **Apple platforms** (macOS 14+), the dashboard wires a `withObservationTracking` loop
-that fires whenever any scalar state changes. The terminal clears and re-renders
-automatically — no polling, no SwiftUI required.
+`demo` mode proves headless observation fires live: it arms a `withObservationTracking`
+observer, performs a fixed sequence of mutations, and reports each reaction —
 
-On **Linux / Windows**, `onChange` delivery is not available in AppState. The dashboard
-falls back to re-rendering immediately after each command, producing identical visual
-output with manual trigger instead of reactive trigger.
+```
+$ swift run appstate-tui demo
+  Reaction 1: counter=1  temp=20.0°C  paused=false
+  ...
+  Observer reacted 5 time(s) to 5 mutation(s).
+```
+
+This is Apple-only: `withObservationTracking` delivery is not available in AppState on
+Linux/Windows (see the repo README and AppState#150). The interactive dashboard works on
+all platforms because it re-renders synchronously after each command rather than relying
+on observation.
 
 ## Architecture
 
