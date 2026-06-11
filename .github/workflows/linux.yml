@@ -10,7 +10,6 @@ jobs:
   packages:
     name: ${{ matrix.package }} (Linux)
     runs-on: ubuntu-latest
-    container: swift:6.1-jammy
     strategy:
       fail-fast: false
       matrix:
@@ -18,6 +17,12 @@ jobs:
         # do not appear here. The packages below use only the cross-platform core.
         package: [cli, observability, vapor-example, wasm]
     steps:
+      # Use the toolchain action rather than the `swift:6.1` Docker image: that image
+      # ships a broken libswiftObservation.so (undefined reference to swift::threading::fatal),
+      # which aborts anything linking Observation. This matches AppState's own green Linux CI.
+      - uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '6.1.0'
       - uses: actions/checkout@v4
       - name: Build
         run: swift build

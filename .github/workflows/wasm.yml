@@ -37,8 +37,12 @@ jobs:
     # `#if canImport(JavaScriptKit)`).
     name: WASMCore (host)
     runs-on: ubuntu-latest
-    container: swift:6.1-jammy
     steps:
+      # setup-swift rather than the swift:6.1 image, which ships a broken
+      # libswiftObservation.so. See linux.yml.
+      - uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '6.1.0'
       - uses: actions/checkout@v4
       - name: Test WASMCore
         run: swift test
