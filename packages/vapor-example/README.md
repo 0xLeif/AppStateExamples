@@ -38,9 +38,12 @@ Both fields are optional — omit either to leave it unchanged.
 
 ## Running
 
+Runs locally on macOS and Linux. The server defaults to `http://127.0.0.1:8080`; pass
+`--port` if that's taken (e.g. by a local `algod`, which also uses 8080):
+
 ```bash
 cd packages/vapor-example
-swift run vapor-example
+swift run vapor-example serve --hostname 127.0.0.1 --port 8099
 ```
 
 > **Note on directory naming**: the package directory is `vapor-example/` (not `vapor/`).
@@ -48,23 +51,32 @@ swift run vapor-example
 > nested inside a git repository.  Using `vapor/` would create an identity collision
 > with the `vapor` dependency package and cause dependency resolution to silently fail.
 
-The server starts on `http://localhost:8080`.
+### Smoke test
+
+With the server running on `:8099`:
 
 ```bash
-# Health
-curl http://localhost:8080/
+curl http://127.0.0.1:8099/
+# {"appName":"AppState Vapor Example","totalRequests":1,"status":"ok"}
 
-# Greet
-curl http://localhost:8080/greet/Alice
+curl http://127.0.0.1:8099/greet/Leif
+# {"greeting":"Hello, Leif! Welcome to AppState Vapor Example."}
 
-# Metrics
-curl http://localhost:8080/metrics
-
-# Update config
-curl -X POST http://localhost:8080/config \
+# Mutate the StoredState greeting template (hops to the main actor server-side)
+curl -X POST http://127.0.0.1:8099/config \
   -H "Content-Type: application/json" \
-  -d '{"appName":"CorvidDemo","greetingTemplate":"Howdy, {name}!"}'
+  -d '{"greetingTemplate":"Yo, {name}! 👋"}'
+
+curl http://127.0.0.1:8099/greet/Leif
+# {"greeting":"Yo, Leif! 👋"}   <- the config change is reflected
+
+curl http://127.0.0.1:8099/metrics
+# {"totalRequests":7,"routeCounts":{"GET /":2,"GET /greet/:name":3,"POST /config":1,"GET /metrics":2}}
 ```
+
+Verified end-to-end on macOS: `State` (app name / request counter), `StoredState`
+(greeting template), the injected `GreetingService`, and the `RequestMetrics` actor all
+work in a live server.
 
 ## Running tests
 
