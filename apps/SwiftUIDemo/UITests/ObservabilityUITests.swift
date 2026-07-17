@@ -4,31 +4,13 @@ import XCTest
 
 /// XCUITest flows that verify the headless observation log updates
 /// when the counter is toggled from the Observability tab.
-final class ObservabilityUITests: XCTestCase {
-
-    // MARK: Properties
-
-    private var app: XCUIApplication!
-
-    // MARK: Setup & Teardown
-
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-        continueAfterFailure = false
-        app = XCUIApplication()
-        app.launch()
-    }
-
-    override func tearDownWithError() throws {
-        app = nil
-        try super.tearDownWithError()
-    }
+internal final class ObservabilityUITests: SwiftUIDemoUITestCase {
 
     // MARK: Tests
 
     /// Navigates to the Observability tab, increments the counter, and asserts
     /// that the headless observer's event count increases.
-    func testObserverLogsCounterChange() throws {
+    internal func testObserverLogsCounterChange() throws {
         // Navigate to the Observability tab.
         let tabBar = app.tabBars.firstMatch
         tabBar.buttons["Observability"].tap()
@@ -36,20 +18,22 @@ final class ObservabilityUITests: XCTestCase {
         // Wait for the observer to appear and confirm it is active.
         let statusLabel = app.staticTexts["ObserverStatus"]
         XCTAssertTrue(statusLabel.waitForExistence(timeout: 5), "Observer status label should appear")
-        XCTAssertEqual(statusLabel.label, "Observing", "Observer should be active on appear")
+        XCTAssertTrue(statusLabel.label.contains("Observing"), "Observer should be active on appear")
 
         // Read the initial event count.
         let eventCountLabel = app.staticTexts["ObserverEventCount"]
         XCTAssertTrue(eventCountLabel.waitForExistence(timeout: 5))
         let initialCountText = eventCountLabel.label
-        let initialCount = Int(initialCountText.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) ?? 0
+        let initialCount = Int(
+            initialCountText.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
+        ) ?? 0
 
         // Increment the counter three times via the stepper.
         let stepper = app.steppers["ObservabilityCounterStepper"]
         XCTAssertTrue(stepper.waitForExistence(timeout: 5), "Counter stepper should appear")
 
         for _ in 0..<3 {
-            stepper.buttons["Increment"].tap()
+            app.buttons["ObservabilityCounterStepper-Increment"].tap()
         }
 
         // Wait a moment for the async re-arm cycle to complete.
@@ -57,7 +41,9 @@ final class ObservabilityUITests: XCTestCase {
             predicate: NSPredicate { [weak self] _, _ in
                 guard let self else { return false }
                 let currentText = self.app.staticTexts["ObserverEventCount"].label
-                let currentCount = Int(currentText.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()) ?? 0
+                let currentCount = Int(
+                    currentText.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
+                ) ?? 0
                 return currentCount >= initialCount + 3
             },
             object: nil
@@ -76,17 +62,20 @@ final class ObservabilityUITests: XCTestCase {
         // Assert log entries are visible.
         let firstEntry = app.staticTexts.matching(identifier: "ObserverLogEntry").firstMatch
         XCTAssertTrue(firstEntry.exists, "At least one log entry should appear in the Change Log section")
+
+        app.buttons["ResetObservabilityCounterButton"].tap()
+        XCTAssertEqual(app.staticTexts["ObservabilityCounterValue"].label, "0")
     }
 
     /// Toggles the observer off and confirms the event count stops increasing.
-    func testStopObserverPreventsNewLogs() throws {
+    internal func testStopObserverPreventsNewLogs() throws {
         let tabBar = app.tabBars.firstMatch
         tabBar.buttons["Observability"].tap()
 
         // Wait for observer to be active.
         let statusLabel = app.staticTexts["ObserverStatus"]
         XCTAssertTrue(statusLabel.waitForExistence(timeout: 5))
-        XCTAssertEqual(statusLabel.label, "Observing")
+        XCTAssertTrue(statusLabel.label.contains("Observing"))
 
         // Stop the observer.
         let toggleButton = app.buttons["ToggleObserverButton"]
@@ -94,7 +83,7 @@ final class ObservabilityUITests: XCTestCase {
         toggleButton.tap()
 
         // Confirm it stopped.
-        XCTAssertEqual(statusLabel.label, "Stopped", "Observer status should change to Stopped")
+        XCTAssertTrue(statusLabel.label.contains("Stopped"), "Observer status should change to Stopped")
 
         // Record event count after stopping.
         let eventCountLabel = app.staticTexts["ObserverEventCount"]
@@ -103,8 +92,8 @@ final class ObservabilityUITests: XCTestCase {
         // Increment the counter.
         let stepper = app.steppers["ObservabilityCounterStepper"]
         XCTAssertTrue(stepper.waitForExistence(timeout: 5))
-        stepper.buttons["Increment"].tap()
-        stepper.buttons["Increment"].tap()
+        app.buttons["ObservabilityCounterStepper-Increment"].tap()
+        app.buttons["ObservabilityCounterStepper-Increment"].tap()
 
         // Event count should remain the same since observer is stopped.
         XCTAssertEqual(
@@ -112,5 +101,9 @@ final class ObservabilityUITests: XCTestCase {
             countAfterStop,
             "Event count should not increase when observer is stopped"
         )
+
+        toggleButton.tap()
+        XCTAssertTrue(statusLabel.label.contains("Observing"))
+        app.tabBars.buttons["State"].tap()
     }
 }

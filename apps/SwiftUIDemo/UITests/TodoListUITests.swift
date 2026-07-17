@@ -3,30 +3,12 @@ import XCTest
 // MARK: - Todo List UI Tests
 
 /// XCUITest flows exercising the SwiftData todo list screen.
-final class TodoListUITests: XCTestCase {
-
-    // MARK: Properties
-
-    private var app: XCUIApplication!
-
-    // MARK: Setup & Teardown
-
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-        continueAfterFailure = false
-        app = XCUIApplication()
-        app.launch()
-    }
-
-    override func tearDownWithError() throws {
-        app = nil
-        try super.tearDownWithError()
-    }
+internal final class TodoListUITests: SwiftUIDemoUITestCase {
 
     // MARK: Tests
 
     /// Navigates to the SwiftData tab, adds a todo item, and asserts it appears in the list.
-    func testAddTodoItem() throws {
+    internal func testAddTodoItem() throws {
         // Navigate to the SwiftData tab.
         let tabBar = app.tabBars.firstMatch
         tabBar.buttons["SwiftData"].tap()
@@ -50,11 +32,19 @@ final class TodoListUITests: XCTestCase {
         )
 
         // Assert the field cleared after add.
-        XCTAssertEqual(field.value as? String, "", "Field should clear after adding an item")
+        XCTAssertEqual(field.value as? String, "New item title", "Field should return to its placeholder")
+
+        let completionToggle = app.images["TodoCompletionToggle"]
+        XCTAssertTrue(completionToggle.waitForExistence(timeout: 5))
+        completionToggle.tap()
+        XCTAssertEqual(completionToggle.label, "Mark incomplete")
+
+        app.buttons["DeleteAllButton"].tap()
+        XCTAssertFalse(app.staticTexts["Buy groceries"].exists)
     }
 
     /// Adds two items, deletes one via swipe, and asserts only one remains.
-    func testDeleteTodoItem() throws {
+    internal func testDeleteTodoItem() throws {
         let tabBar = app.tabBars.firstMatch
         tabBar.buttons["SwiftData"].tap()
 
@@ -86,10 +76,12 @@ final class TodoListUITests: XCTestCase {
         app.buttons["Delete"].tap()
 
         // Assert first item is gone.
-        XCTAssertFalse(
-            app.staticTexts["First item"].exists,
-            "Deleted item should no longer appear in the list"
+        let deletedItem = app.staticTexts["First item"]
+        let deletion = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "exists == false"),
+            object: deletedItem
         )
+        wait(for: [deletion], timeout: 5)
 
         // Assert second item is still there.
         XCTAssertTrue(
@@ -99,7 +91,7 @@ final class TodoListUITests: XCTestCase {
     }
 
     /// Taps the strict insert button and asserts the item appears in the list.
-    func testStrictInsert() throws {
+    internal func testStrictInsert() throws {
         let tabBar = app.tabBars.firstMatch
         tabBar.buttons["SwiftData"].tap()
 

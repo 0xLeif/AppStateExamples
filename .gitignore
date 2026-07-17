@@ -2,6 +2,8 @@
 .build/
 .swiftpm/
 DerivedData/
+.derivedData/
+TestResults/
 *.xcodeproj/xcuserdata/
 *.xcodeproj/project.xcworkspace/xcuserdata/
 *.xcworkspace/xcuserdata/
@@ -13,3 +15,6 @@ apps/SwiftUIDemo/SwiftUIDemo.xcodeproj/
 apps/MenuBarDemo/MenuBarDemo.xcodeproj/
 apps/Pomodoro/Pomodoro.xcodeproj/
 apps/WidgetDemo/WidgetDemo.xcodeproj/
+
+# Raw xcresult attachment exports; curated proof frames live in docs/assets/swiftui.
+docs/assets/swiftui-ui-tests/

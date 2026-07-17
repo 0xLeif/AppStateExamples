@@ -10,9 +10,8 @@ jobs:
   wasm-build:
     name: wasm-example (SwiftWasm)
     runs-on: ubuntu-latest
-    # Best-effort: the SwiftWasm SDK lags mainline Swift, so the cross-compile is
-    # informational and must not gate the workflow. The host job below is the real gate.
-    continue-on-error: true
+    # AppState 3.0 resolves the transitive WASM dependency blocker, so the pinned
+    # SwiftWasm toolchain is now a required cross-platform gate.
     steps:
       - uses: actions/checkout@v4
 
@@ -37,12 +36,7 @@ jobs:
     # `#if canImport(JavaScriptKit)`).
     name: WASMCore (host)
     runs-on: ubuntu-latest
-    # Informational: WASMCore uses State<[TodoItem]>, which hits AppState's Linux
-    # collection-cast crash (0xLeif/AppState#151). Passes on macOS.
-    continue-on-error: true
     steps:
-      # setup-swift rather than the swift:6.1 image, which ships a broken
-      # libswiftObservation.so. See linux.yml.
       - uses: swift-actions/setup-swift@v2
         with:
           swift-version: '6.1.0'

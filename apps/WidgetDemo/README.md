@@ -21,7 +21,7 @@ To share values, both processes must point AppState at the same App Group `UserD
 // Sources/Shared/Application+SharedState.swift
 @MainActor
 @discardableResult
-internal static func useSharedDefaults() -> Application.DependencyOverride? {
+public static func useSharedDefaults() -> Application.DependencyOverride? {
     let suiteName = "group.com.0xleif.AppStateWidgetDemo"
     guard UserDefaults(suiteName: suiteName) != nil else { return nil }
     return Application.override(\.userDefaults, with: AppGroupUserDefaults(suiteName: suiteName))
@@ -66,9 +66,10 @@ Sources/
   Widget/
     FocusWidgetBundle.swift         # @main widget entry point
     FocusWidget.swift               # StaticConfiguration (.systemSmall + .systemMedium)
-    FocusTimelineProvider.swift     # Reads StoredState, emits FocusEntry
-    FocusWidgetView.swift           # Widget UI
-    FocusEntry.swift                # TimelineEntry
+    FocusTimelineProvider.swift     # Thin WidgetKit protocol adapter
+    FocusTimelineSource.swift       # Tested AppState reads + timeline/callback delivery
+    FocusWidgetView.swift           # Shared, snapshot-tested widget UI
+    FocusEntry.swift                # Shared TimelineEntry
     Info.plist
 SupportingFiles/
   WidgetDemo.entitlements           # com.apple.security.application-groups
@@ -119,6 +120,13 @@ xcodebuild build \
 ## How the AppState Override Mechanism Works
 
 1. `Application.override(\.userDefaults, with: value)` replaces the registered dependency for the current process until the returned token is cancelled.
-2. All `@StoredState` property wrappers and `Application.state(\.focusTitle)` static accesses resolve the dependency fresh on each read, so they see the overridden suite immediately.
+2. All `@StoredState` property wrappers and `Application.storedState(\.focusTitle)` static accesses resolve the dependency fresh on each read, so they see the overridden suite immediately.
 3. Because the override is installed in **both** the app entry point and the widget bundle entry point — before any state is accessed — both processes share the same `UserDefaults` container, and any write in one process is visible to the other.
 4. After each mutation, the app calls `WidgetCenter.shared.reloadAllTimelines()`, which prompts WidgetKit to call `getTimeline(in:completion:)` on the provider, which re-reads the `StoredState` values from the shared suite.
+
+## Verification
+
+`fledge run test-apple-apps` runs six core behavior tests, eight light/dark/editor widget snapshots, and an end-to-end UI
+journey that edits, increments, relaunches to prove persistence, and resets. The latest run covered 100% of the host app
+and 98.03% of `WidgetDemoCore`; CI enforces 95% for both. The 33-line WidgetKit entry/adapter bundle is compile-gated,
+while its state and rendering logic reside in the tested shared framework.

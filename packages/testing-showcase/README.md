@@ -159,5 +159,5 @@ Expected output: **16 tests, 0 failures**.
 - All 13 `WeatherServiceTests` methods are cross-platform (macOS + Linux).
 - The 3 `ObservationDeliveryTests` methods are Apple-only, gated with
   `#if !os(Linux) && !os(Windows)`.
-- All state is scalar (`Double`, `Int`, `String`) — no arrays or dictionaries,
-  which avoids a known Linux crash in AppState 3.0-rc.1.
+- AppState 3.0.0's cross-platform collection fix allows the broader example repository to gate array-backed state on
+  Linux as well; this focused suite keeps scalar values so each test teaches one isolation or mocking technique.

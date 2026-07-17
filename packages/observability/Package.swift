@@ -17,7 +17,7 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/0xLeif/AppState.git", exact: "3.0.0-rc.1")
+        .package(url: "https://github.com/0xLeif/AppState.git", exact: "3.0.0")
     ],
     targets: [
         .target(

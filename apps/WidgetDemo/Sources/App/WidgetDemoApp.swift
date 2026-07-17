@@ -1,5 +1,6 @@
 import SwiftUI
 import AppState
+import WidgetDemoCore
 
 // MARK: - App Entry Point
 
@@ -26,6 +27,12 @@ internal struct WidgetDemoApp: App {
     internal init() {
         // Accessing the static property triggers the lazy initializer on the main actor.
         _ = WidgetDemoApp.sharedDefaultsToken
+        if ProcessInfo.processInfo.arguments.contains("-ResetDemoState") {
+            var title = Application.storedState(\.focusTitle)
+            title.value = "Focus Session"
+            var count = Application.storedState(\.focusCount)
+            count.value = 0
+        }
     }
 
     // MARK: Body

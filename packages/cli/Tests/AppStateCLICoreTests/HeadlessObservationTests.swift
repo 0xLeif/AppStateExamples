@@ -8,7 +8,7 @@ import Observation
 
 /// Verifies that `withObservationTracking` fires its `onChange` closure when
 /// an `Application` state value is mutated — the headline AppState 3.0 feature.
-final class HeadlessObservationTests: XCTestCase {
+internal final class HeadlessObservationTests: XCTestCase {
 
     // MARK: - Sendable Helper
 
@@ -16,11 +16,11 @@ final class HeadlessObservationTests: XCTestCase {
     private final class Counter: @unchecked Sendable {
         private let lock = NSLock()
         private var _value = 0
-        var value: Int {
+        fileprivate var value: Int {
             lock.lock(); defer { lock.unlock() }
             return _value
         }
-        func increment() {
+        fileprivate func increment() {
             lock.lock(); defer { lock.unlock() }
             _value += 1
         }
@@ -30,20 +30,61 @@ final class HeadlessObservationTests: XCTestCase {
     private final class StringCollector: @unchecked Sendable {
         private let lock = NSLock()
         private var _lines: [String] = []
-        var lines: [String] {
+        fileprivate var lines: [String] {
             lock.lock(); defer { lock.unlock() }
             return _lines
         }
-        func append(_ line: String) {
+        fileprivate func append(_ line: String) {
             lock.lock(); defer { lock.unlock() }
             _lines.append(line)
+        }
+    }
+
+    /// Continuously re-arms observation until the expected number of mutations arrives.
+    fileprivate final class RearmingObserver: @unchecked Sendable {
+        private let lock = NSLock()
+        private var observedValues: [Int?] = []
+        private let expected: Int
+
+        fileprivate init(expected: Int) {
+            self.expected = expected
+        }
+
+        fileprivate var observed: [Int?] {
+            lock.lock(); defer { lock.unlock() }
+            return observedValues
+        }
+
+        private var count: Int {
+            lock.lock(); defer { lock.unlock() }
+            return observedValues.count
+        }
+
+        private func record(_ value: Int?) {
+            lock.lock(); defer { lock.unlock() }
+            observedValues.append(value)
+        }
+
+        /// Arms one observation cycle; re-arms inside `onChange` until `expected` fires.
+        @MainActor
+        fileprivate func arm() {
+            withObservationTracking {
+                _ = Application.state(\.selectedItemIndex).value
+            } onChange: { [self] in
+                _Concurrency.Task { @MainActor in
+                    self.record(Application.state(\.selectedItemIndex).value)
+                    if self.count < self.expected {
+                        self.arm()
+                    }
+                }
+            }
         }
     }
 
     // MARK: - Setup
 
     @MainActor
-    override func setUp() async throws {
+    internal override func setUp() async throws {
         var selectionState = Application.state(\.selectedItemIndex)
         selectionState.value = nil
         var itemsState = Application.fileState(\.items)
@@ -54,7 +95,7 @@ final class HeadlessObservationTests: XCTestCase {
 
     /// `onChange` must fire exactly once for a single mutation.
     @MainActor
-    func testOnChangeFiredForSingleMutation() async {
+    internal func testOnChangeFiredForSingleMutation() async {
         let counter = Counter()
 
         withObservationTracking {
@@ -73,7 +114,7 @@ final class HeadlessObservationTests: XCTestCase {
 
     /// After `onChange` fires it must NOT fire again unless re-armed.
     @MainActor
-    func testOnChangeDoesNotFireTwiceWithoutRearm() async {
+    internal func testOnChangeDoesNotFireTwiceWithoutRearm() async {
         let counter = Counter()
 
         withObservationTracking {
@@ -96,50 +137,8 @@ final class HeadlessObservationTests: XCTestCase {
 
     /// Re-arming inside `onChange` must allow continuous observation.
     @MainActor
-    func testRearmingCapturesAllMutations() async {
+    internal func testRearmingCapturesAllMutations() async {
         let expectedMutations = 4
-
-        // Encapsulate both the collection and the re-arming logic in a class
-        // so the `onChange` closure can capture `self` as `@Sendable`.
-        final class RearmingObserver: @unchecked Sendable {
-            private let lock = NSLock()
-            private var _observed: [Int?] = []
-            let expected: Int
-
-            init(expected: Int) {
-                self.expected = expected
-            }
-
-            var observed: [Int?] {
-                lock.lock(); defer { lock.unlock() }
-                return _observed
-            }
-
-            var count: Int {
-                lock.lock(); defer { lock.unlock() }
-                return _observed.count
-            }
-
-            func record(_ value: Int?) {
-                lock.lock(); defer { lock.unlock() }
-                _observed.append(value)
-            }
-
-            /// Arms one observation cycle; re-arms inside `onChange` until `expected` fires.
-            @MainActor
-            func arm() {
-                withObservationTracking {
-                    _ = Application.state(\.selectedItemIndex).value
-                } onChange: { [self] in
-                    _Concurrency.Task { @MainActor in
-                        self.record(Application.state(\.selectedItemIndex).value)
-                        if self.count < self.expected {
-                            self.arm()
-                        }
-                    }
-                }
-            }
-        }
 
         let observer = RearmingObserver(expected: expectedMutations)
         observer.arm()
@@ -162,7 +161,7 @@ final class HeadlessObservationTests: XCTestCase {
     // MARK: - ObservationDemo integration
 
     @MainActor
-    func testObservationDemoProducesOutput() async {
+    internal func testObservationDemoProducesOutput() async {
         let collector = StringCollector()
 
         await ObservationDemo.run(mutationCount: 3) { [collector] line in
@@ -180,6 +179,24 @@ final class HeadlessObservationTests: XCTestCase {
         )
         // Three mutations means three onChange lines plus header, "watching" line, and footer = 6 total.
         XCTAssertEqual(collector.lines.count, 6, "Expected 6 output lines. Got:\n\(combined)")
+    }
+
+    @MainActor
+    internal func testObservationDemoHandlesZeroAndNegativeMutationCounts() async {
+        let zeroCollector = StringCollector()
+        let negativeCollector = StringCollector()
+
+        await ObservationDemo.run(mutationCount: 0) { [zeroCollector] line in
+            zeroCollector.append(line)
+        }
+        await ObservationDemo.run(mutationCount: -2) { [negativeCollector] line in
+            negativeCollector.append(line)
+        }
+
+        XCTAssertEqual(zeroCollector.lines.count, 3)
+        XCTAssertEqual(negativeCollector.lines.count, 3)
+        XCTAssertTrue(zeroCollector.lines.last?.contains("complete") == true)
+        XCTAssertTrue(negativeCollector.lines.last?.contains("complete") == true)
     }
 }
 #endif

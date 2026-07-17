@@ -31,10 +31,14 @@ internal struct SecureTokenView: View {
                 }
 
                 Toggle("Reveal token", isOn: $isRevealed)
+                    .accessibilityIdentifier("RevealTokenToggle")
             } header: {
                 Text("Token Storage")
             } footer: {
-                Text("Written to and read from the system Keychain. The value is never stored in UserDefaults or on disk in plain text.")
+                Text(
+                    "Written to and read from the system Keychain. "
+                        + "The value is never stored in UserDefaults or on disk in plain text."
+                )
             }
 
             Section {
@@ -48,6 +52,7 @@ internal struct SecureTokenView: View {
                         apiToken = nil
                         tokenDraft = ""
                     }
+                    .accessibilityIdentifier("DeleteTokenButton")
                 }
             }
 
@@ -56,9 +61,11 @@ internal struct SecureTokenView: View {
                     Text(isRevealed ? savedToken : String(repeating: "•", count: min(savedToken.count, 16)))
                         .monospacedDigit()
                         .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("TokenCurrentValue")
                 } else {
                     Text("(no token stored)")
                         .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("TokenCurrentValue")
                 }
             }
         }

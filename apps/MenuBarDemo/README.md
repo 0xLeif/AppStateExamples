@@ -44,6 +44,9 @@ Build and run the `MenuBarDemo` scheme. A sparkle icon appears in your menu bar.
 
 > Note: Keychain operations work without any special entitlement in debug builds. Distribution builds require the `Keychain Sharing` entitlement or a provisioning profile that includes it.
 
+Snapshot and unit-test hosts intentionally inject a fixture into the secure-token presentation. They never read, write,
+or request access to the developer's login Keychain. Normal signed app launches still use live `@SecureState`.
+
 ### @SyncState — iCloud-synced accent
 
 `@SyncState(\.accentName)` reads and writes `NSUbiquitousKeyValueStore`. Selecting a different accent in the Picker propagates to every Mac and iPhone signed into the same iCloud account.
@@ -95,4 +98,11 @@ Sources/
 - Swift 6.0
 - [xcodegen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`)
 
-The package dependency (`AppState` exact `3.0.0-rc.1`) is resolved automatically by Xcode on first open.
+The package dependency (`AppState` exact `3.0.0`) is resolved automatically by Xcode on first open.
+
+## Verification
+
+From the repository root, `fledge run test-apple-apps` runs service/state behavior tests plus twelve macOS image
+regressions covering the complete light-mode popover, every accent branch, and shared components. The latest run covered
+88.85% of `MenuBarDemo.app`; CI enforces an 85% minimum. Untested lines are primarily destructive/termination button
+closures that image tests render but deliberately do not invoke.

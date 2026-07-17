@@ -31,6 +31,7 @@ internal struct UsernameView: View {
             Section {
                 LabeledContent("Current value", value: username.isEmpty ? "(empty)" : username)
                     .foregroundStyle(username.isEmpty ? .secondary : .primary)
+                    .accessibilityIdentifier("UsernameCurrentValue")
             }
 
             Section {
@@ -38,6 +39,7 @@ internal struct UsernameView: View {
                     username = ""
                 }
                 .foregroundStyle(.red)
+                .accessibilityIdentifier("ClearUsernameButton")
             }
         }
         .navigationTitle("Username (@StoredState)")

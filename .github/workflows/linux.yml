@@ -10,11 +10,6 @@ jobs:
   packages:
     name: ${{ matrix.package }} (Linux)
     runs-on: ubuntu-latest
-    # Informational: AppState 3.0's Linux support has open upstream bugs that these examples
-    # surface — collection-typed state crashes (0xLeif/AppState#151), observation delivery is
-    # Apple-only (#150), and the Swift 6.1.0 Linux toolchain mis-links libswiftObservation when
-    # building a Vapor executable. macOS is the gating workflow until those land.
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -22,9 +17,7 @@ jobs:
         # do not appear here. The packages below use only the cross-platform core.
         package: [cli, observability, vapor-example, wasm, tui, testing-showcase]
     steps:
-      # Use the toolchain action rather than the `swift:6.1` Docker image: that image
-      # ships a broken libswiftObservation.so (undefined reference to swift::threading::fatal),
-      # which aborts anything linking Observation. This matches AppState's own green Linux CI.
+      # Use the toolchain action so every package sees the same supported Swift release.
       - uses: swift-actions/setup-swift@v2
         with:
           swift-version: '6.1.0'

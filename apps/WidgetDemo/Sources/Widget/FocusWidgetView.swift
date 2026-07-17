@@ -5,18 +5,28 @@ import WidgetKit
 
 /// The visual content of the Focus Widget, rendered from a `FocusEntry`.
 /// Adapts its layout for `.systemSmall` and `.systemMedium` families.
-internal struct FocusWidgetView: View {
+public struct FocusWidgetView: View {
 
     // MARK: Properties
 
-    internal let entry: FocusEntry
+    public let entry: FocusEntry
+
+    /// Optional preview and snapshot override; production widgets use the environment family.
+    private let familyOverride: WidgetFamily?
 
     @Environment(\.widgetFamily) private var widgetFamily
 
     // MARK: Body
 
-    internal var body: some View {
-        switch widgetFamily {
+    public init(entry: FocusEntry, family: WidgetFamily? = nil) {
+        self.entry = entry
+        self.familyOverride = family
+    }
+
+    // MARK: Body
+
+    public var body: some View {
+        switch familyOverride ?? widgetFamily {
         case .systemSmall:
             smallLayout
         case .systemMedium:

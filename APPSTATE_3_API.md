@@ -4,7 +4,7 @@ This is the authoritative cheat sheet for writing AppState 3.0.0 examples. **Do 
 
 Pin the dependency exactly:
 ```swift
-.package(url: "https://github.com/0xLeif/AppState.git", exact: "3.0.0-rc.1")
+.package(url: "https://github.com/0xLeif/AppState.git", exact: "3.0.0")
 ```
 `import AppState` to use it.
 
@@ -108,14 +108,36 @@ func observeCounter() {
 ## SwiftData (`ModelState`) — Apple only
 
 ```swift
-@Model final class TodoItem { var title: String; init(title: String) { self.title = title } }
+@Model internal final class TodoItem {
+    internal var title: String
+
+    internal init(title: String) {
+        self.title = title
+    }
+}
+
+private func makeTodoContainer() -> ModelContainer {
+    do {
+        return try ModelContainer(for: TodoItem.self)
+    } catch {
+        guard let fallback = try? ModelContainer(
+            for: TodoItem.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        ) else {
+            preconditionFailure("Neither persistent nor in-memory SwiftData storage is available")
+        }
+        return fallback
+    }
+}
 
 extension Application {
-    var container: Dependency<ModelContainer> {
-        modelContainer(try! ModelContainer(for: TodoItem.self,
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true)))
+    internal var container: Dependency<ModelContainer> {
+        modelContainer(makeTodoContainer())
     }
-    var todos: ModelState<TodoItem> { modelState(container: \.container) }
+
+    internal var todos: ModelState<TodoItem> {
+        modelState(container: \.container)
+    }
 }
 
 // Read & mutate
@@ -129,7 +151,7 @@ let all = todos.models                        // live fetch
 
 1. Explicit access control on EVERY declaration (`public`/`internal`/`private`).
 2. K&R braces — opening brace on the same line.
-3. NO force unwrap (`!`), `try!`, or `as!` in example library code. (`try!` is tolerable ONLY in a `ModelContainer` initializer in a demo, matching the repo's own examples — but prefer `do/catch`.)
+3. NO force unwrap (`!`), `try!`, or `as!` in example library code.
 4. async/await only — no completion handlers.
 5. `Sendable` conformance for types crossing concurrency boundaries; `@Sendable` closures where needed.
 6. Descriptive generics (`Value`, `Output`, `Key`) — never single letters.

@@ -13,17 +13,17 @@ import XCTest
 // `@unchecked Sendable` class whose methods can be called from any context.
 
 /// A boolean latch that can be set from a `@Sendable` closure.
-private final class ChangeFlag: @unchecked Sendable {
+fileprivate final class ChangeFlag: @unchecked Sendable {
     private(set) var fired: Bool = false
-    func fire() { fired = true }
-    func reset() { fired = false }
+    fileprivate func fire() { fired = true }
+    fileprivate func reset() { fired = false }
 }
 
 /// An integer counter that can be incremented from a `@Sendable` closure.
-private final class ChangeCounter: @unchecked Sendable {
+fileprivate final class ChangeCounter: @unchecked Sendable {
     private(set) var count: Int = 0
-    func increment() { count += 1 }
-    func reset() { count = 0 }
+    fileprivate func increment() { count += 1 }
+    fileprivate func reset() { count = 0 }
 }
 
 // MARK: - Property wrapper holders for headless observation
@@ -38,19 +38,19 @@ private final class ChangeCounter: @unchecked Sendable {
 // own ObservationBridgeTests.
 
 @MainActor
-private struct StoredStateHolder {
-    @StoredState(\.lastEvent) var lastEvent: String
+fileprivate struct StoredStateHolder {
+    @StoredState(\.lastEvent) fileprivate var lastEvent: String
 }
 
 @MainActor
-private struct FileStateHolder {
-    @FileState(\.observationLog) var observationLog: [String]?
+fileprivate struct FileStateHolder {
+    @FileState(\.observationLog) fileprivate var observationLog: [String]?
 }
 
 @MainActor
-private struct SliceHolder {
-    @Slice(\.userProfile, \.score) var score: Int
-    @Slice(\.userProfile, \.displayName) var displayName: String
+fileprivate struct SliceHolder {
+    @Slice(\.userProfile, \.score) fileprivate var score: Int
+    @Slice(\.userProfile, \.displayName) fileprivate var displayName: String
 }
 
 // MARK: - AppStateObservabilityTests
@@ -74,11 +74,11 @@ private struct SliceHolder {
 /// All tests are `@MainActor`-isolated because every AppState mutation must occur
 /// on the main thread.
 @MainActor
-final class AppStateObservabilityTests: XCTestCase {
+internal final class AppStateObservabilityTests: XCTestCase {
 
     // MARK: - Setup / Teardown
 
-    override func setUp() async throws {
+    internal override func setUp() async throws {
         // Reset shared state to known baselines before each test.
         AppStateMutation.setCounter(0)
         AppStateMutation.setTemperature(20.0)
@@ -94,7 +94,7 @@ final class AppStateObservabilityTests: XCTestCase {
     // MARK: - Test 1: onChange fires on mutation
 
     /// `withObservationTracking` must fire its `onChange` closure after a mutation.
-    func test_onChange_firesOnMutation() async throws {
+    internal func test_onChange_firesOnMutation() async throws {
         let flag = ChangeFlag()
 
         withObservationTracking {
@@ -115,7 +115,7 @@ final class AppStateObservabilityTests: XCTestCase {
     /// AppState 3.0 uses a single global observation anchor (`changeAnchor`).
     /// Mutating ANY state fires ALL active observers, even those registered against
     /// a different state. This is by design — the anchor is application-wide.
-    func test_singleAnchor_anyMutationFiresRegisteredObservers() async throws {
+    internal func test_singleAnchor_anyMutationFiresRegisteredObservers() async throws {
         let flag = ChangeFlag()
 
         // Register against `counter`.
@@ -140,7 +140,7 @@ final class AppStateObservabilityTests: XCTestCase {
 
     /// `withObservationTracking` fires exactly once; after that, further mutations
     /// to the same state do not trigger the same `onChange`.
-    func test_onChange_isOneShot() async throws {
+    internal func test_onChange_isOneShot() async throws {
         let counter = ChangeCounter()
 
         withObservationTracking {
@@ -163,7 +163,7 @@ final class AppStateObservabilityTests: XCTestCase {
 
     /// Verifies that manually re-arming inside `onChange` causes the observer to fire
     /// for each subsequent mutation.
-    func test_reArming_continuesAcrossMultipleMutations() async throws {
+    internal func test_reArming_continuesAcrossMultipleMutations() async throws {
         let collector = RearmingLogCollector()
         collector.start()
 
@@ -180,7 +180,7 @@ final class AppStateObservabilityTests: XCTestCase {
     // MARK: - Test 5: StateObserver collects log entries
 
     /// `StateObserver` must populate `reactionLog` for each mutation while active.
-    func test_stateObserver_collectsLogEntries() async throws {
+    internal func test_stateObserver_collectsLogEntries() async throws {
         let observer = StateObserver(label: "counter") {
             Application.state(\.counter).value
         }
@@ -204,7 +204,7 @@ final class AppStateObservabilityTests: XCTestCase {
 
     /// After `stop()`, further mutations must not append new log entries beyond
     /// the one potentially caught during the final re-arm window.
-    func test_stateObserver_stopsAfterStop() async throws {
+    internal func test_stateObserver_stopsAfterStop() async throws {
         let observer = StateObserver(label: "counter") {
             Application.state(\.counter).value
         }
@@ -236,7 +236,7 @@ final class AppStateObservabilityTests: XCTestCase {
 
     /// Registering N observers against the same state must cause all N `onChange`
     /// callbacks to fire on a single mutation.
-    func test_multipleObservers_allFireOnOneMutation() async throws {
+    internal func test_multipleObservers_allFireOnOneMutation() async throws {
         let tracker = BroadcastTracker()
         let count = 4
 
@@ -258,7 +258,7 @@ final class AppStateObservabilityTests: XCTestCase {
 
     /// `@StoredState` property wrapper getter calls `registerObservation()`, so
     /// mutations to that state fire observers registered through the wrapper.
-    func test_storedState_participatesInObservation() async throws {
+    internal func test_storedState_participatesInObservation() async throws {
         let flag = ChangeFlag()
         let holder = StoredStateHolder()
 
@@ -268,7 +268,7 @@ final class AppStateObservabilityTests: XCTestCase {
             flag.fire()
         }
 
-        var mutation = StoredStateHolder()
+        let mutation = StoredStateHolder()
         mutation.lastEvent = "test8"
         await Task.yield()
         await Task.yield()
@@ -280,7 +280,7 @@ final class AppStateObservabilityTests: XCTestCase {
 
     /// `@FileState` property wrapper getter calls `registerObservation()`, so
     /// mutations to that state fire observers registered through the wrapper.
-    func test_fileState_participatesInObservation() async throws {
+    internal func test_fileState_participatesInObservation() async throws {
         let flag = ChangeFlag()
         let holder = FileStateHolder()
 
@@ -290,7 +290,7 @@ final class AppStateObservabilityTests: XCTestCase {
             flag.fire()
         }
 
-        var mutation = FileStateHolder()
+        let mutation = FileStateHolder()
         mutation.observationLog = ["entry"]
         await Task.yield()
         await Task.yield()
@@ -302,7 +302,7 @@ final class AppStateObservabilityTests: XCTestCase {
 
     /// `@Slice` property wrapper getter calls `registerObservation()`, so
     /// mutations to the parent state fire observers registered through the slice wrapper.
-    func test_slice_firesOnSubPropertyChange() async throws {
+    internal func test_slice_firesOnSubPropertyChange() async throws {
         let flag = ChangeFlag()
         let holder = SliceHolder()
 
@@ -325,7 +325,7 @@ final class AppStateObservabilityTests: XCTestCase {
 
     /// `StateObserver` with a `@Slice` property wrapper read closure fires on
     /// every mutation to the parent state.
-    func test_stateObserver_worksWithSlice() async throws {
+    internal func test_stateObserver_worksWithSlice() async throws {
         let holder = SliceHolder()
         let observer = StateObserver(label: "score-slice") {
             holder.score
@@ -352,7 +352,7 @@ final class AppStateObservabilityTests: XCTestCase {
 
     /// `AppStateMutation.broadcastChange()` writes a state value back to itself,
     /// which travels through `notifyChange()` and wakes all active observers.
-    func test_broadcastChange_wakesObservers() async throws {
+    internal func test_broadcastChange_wakesObservers() async throws {
         let flag = ChangeFlag()
 
         withObservationTracking {
@@ -372,7 +372,7 @@ final class AppStateObservabilityTests: XCTestCase {
 
     /// `ObservationStream.make` must yield the current value immediately
     /// before any mutations occur.
-    func test_asyncStream_yieldsInitialSnapshot() async throws {
+    internal func test_asyncStream_yieldsInitialSnapshot() async throws {
         AppStateMutation.setCounter(55)
         await Task.yield()
         await Task.yield()
@@ -390,7 +390,7 @@ final class AppStateObservabilityTests: XCTestCase {
 
     /// After the initial snapshot, `ObservationStream` must yield new values in the
     /// order mutations were applied.
-    func test_asyncStream_yieldsValuesInOrder() async throws {
+    internal func test_asyncStream_yieldsValuesInOrder() async throws {
         let stream = ObservationStream.make(label: "counter") {
             Application.state(\.counter).value
         }
@@ -416,7 +416,7 @@ final class AppStateObservabilityTests: XCTestCase {
 
     /// Breaking out of the `for await` loop must stop the stream from delivering
     /// further elements to the local array.
-    func test_asyncStream_stopsOnConsumerBreak() async throws {
+    internal func test_asyncStream_stopsOnConsumerBreak() async throws {
         let stream = ObservationStream.make(label: "counter") {
             Application.state(\.counter).value
         }
@@ -446,7 +446,7 @@ final class AppStateObservabilityTests: XCTestCase {
 
     /// Using `StateObserver` proves continuous re-arming works and the log
     /// entry includes the expected mutated value.
-    func test_observeOnce_stateObserverCapturesValue() async throws {
+    internal func test_observeOnce_stateObserverCapturesValue() async throws {
         let observer = StateObserver(label: "observeOnce") {
             Application.state(\.counter).value
         }
@@ -467,7 +467,7 @@ final class AppStateObservabilityTests: XCTestCase {
     // MARK: - Test 17: One-shot does not fire after expiry
 
     /// After the one-shot fires, further mutations must not retrigger it.
-    func test_oneShot_doesNotFireAfterExpiry() async throws {
+    internal func test_oneShot_doesNotFireAfterExpiry() async throws {
         let counter = ChangeCounter()
 
         withObservationTracking {
@@ -489,7 +489,7 @@ final class AppStateObservabilityTests: XCTestCase {
     // MARK: - Test 18: BroadcastTracker reset clears counts
 
     /// `BroadcastTracker.reset()` must zero `fireCount` and empty `firedLabels`.
-    func test_broadcastTracker_reset() async throws {
+    internal func test_broadcastTracker_reset() async throws {
         let tracker = BroadcastTracker()
 
         tracker.register(label: "a") {
@@ -510,7 +510,7 @@ final class AppStateObservabilityTests: XCTestCase {
     // MARK: - Test 19: collect helper drains exactly N elements
 
     /// `collect(_:count:)` must return exactly `count` elements and stop consuming.
-    func test_collect_drainsPreciselyNElements() async throws {
+    internal func test_collect_drainsPreciselyNElements() async throws {
         let stream = ObservationStream.make(label: "counter") {
             Application.state(\.counter).value
         }
@@ -534,7 +534,7 @@ final class AppStateObservabilityTests: XCTestCase {
     // MARK: - Test 20: StateObserver clearLog
 
     /// `clearLog()` must empty `reactionLog` without stopping observation.
-    func test_stateObserver_clearLog() async throws {
+    internal func test_stateObserver_clearLog() async throws {
         let observer = StateObserver(label: "counter") {
             Application.state(\.counter).value
         }
@@ -568,7 +568,7 @@ final class AppStateObservabilityTests: XCTestCase {
 /// `DispatchQueue.main.async` block is `Sendable`-safe: class references are always `Sendable`,
 /// and `@MainActor` ensures the log mutation happens on the right executor.
 @MainActor
-private final class RearmingLogCollector {
+fileprivate final class RearmingLogCollector {
 
     // MARK: - Properties
 
@@ -578,7 +578,7 @@ private final class RearmingLogCollector {
     // MARK: - Methods
 
     /// Registers the first observation scope and begins re-arming on every change.
-    func start() {
+    fileprivate func start() {
         arm()
     }
 

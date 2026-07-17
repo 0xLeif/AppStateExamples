@@ -1,6 +1,7 @@
 import WidgetKit
 import SwiftUI
 import AppState
+import WidgetDemoCore
 
 // MARK: - Widget Bundle Entry Point
 

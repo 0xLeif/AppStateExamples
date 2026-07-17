@@ -26,10 +26,15 @@ public enum ObservationDemo: Sendable {
     @MainActor
     public static func run(
         mutationCount: Int = 5,
-        output: @escaping @Sendable (String) -> Void
+        output: @escaping @MainActor @Sendable (String) -> Void
     ) async {
         output("--- Headless Observation Demo ---")
         output("Watching `selectedItemIndex` for \(mutationCount) mutations...")
+
+        guard mutationCount > 0 else {
+            output("--- Observation demo complete ---")
+            return
+        }
 
         for step in 1...mutationCount {
             let newValue = step % 3 == 0 ? nil : Optional(step)

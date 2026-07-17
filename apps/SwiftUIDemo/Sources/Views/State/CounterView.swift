@@ -20,7 +20,7 @@ internal struct CounterView: View {
             Section {
                 Stepper(
                     value: $counter,
-                    in: Int.min...Int.max
+                    in: -999...999
                 ) {
                     HStack {
                         Text("Counter")
@@ -41,6 +41,7 @@ internal struct CounterView: View {
                     counter = 0
                 }
                 .foregroundStyle(.red)
+                .accessibilityIdentifier("ResetCounterButton")
             }
         }
         .navigationTitle("Counter (@AppState)")

@@ -11,10 +11,11 @@ import AppState
 /// This proves AppState 3.0's headline feature: `Application` is `@Observable`,
 /// so **any** code can participate in Observation without SwiftUI.
 ///
-/// The class is itself `@Observable` so the `ObservabilitySection` view can
+/// The class is itself `@Observable` only so the `ObservabilitySection` view can
 /// render its `log` and `isObserving` reactively — but the observation of
 /// `Application.counter` is wired through `withObservationTracking`, not through
-/// SwiftUI's body evaluation. The two observation systems are orthogonal.
+/// SwiftUI's body evaluation. The source subscription itself is headless; the
+/// class does not conform to `ObservableObject` and uses no Combine publisher.
 ///
 /// `onChange` is one-shot; the observer re-arms itself inside `onChange` for
 /// continuous, long-lived observation.

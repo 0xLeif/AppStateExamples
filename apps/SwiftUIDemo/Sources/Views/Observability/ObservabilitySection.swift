@@ -42,7 +42,7 @@ internal struct ObservabilitySection: View {
         Section {
             Stepper(
                 value: $counter,
-                in: Int.min...Int.max
+                in: -999...999
             ) {
                 HStack {
                     Text("counter")
@@ -59,10 +59,14 @@ internal struct ObservabilitySection: View {
                 counter = 0
             }
             .foregroundStyle(.red)
+            .accessibilityIdentifier("ResetObservabilityCounterButton")
         } header: {
             Text("Counter (@AppState)")
         } footer: {
-            Text("The same `Application.counter` as in the State tab — mutate it here or there; the headless observer below reacts either way.")
+            Text(
+                "The same `Application.counter` as in the State tab — mutate it here or there; "
+                    + "the headless observer below reacts either way."
+            )
         }
     }
 
@@ -93,7 +97,10 @@ internal struct ObservabilitySection: View {
         } header: {
             Text("Headless Observer")
         } footer: {
-            Text("`HeadlessObserver` is a plain `final class` — no SwiftUI, no `@Observable`, no `ObservableObject`. It uses `withObservationTracking` directly, re-arming itself on every change for continuous observation.")
+            Text(
+                "`HeadlessObserver` uses `withObservationTracking` directly — no Combine publisher "
+                    + "or SwiftUI body subscription — and re-arms itself after every change."
+            )
         }
     }
 

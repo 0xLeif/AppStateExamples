@@ -13,7 +13,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        package: [cli, observability, vapor-example, wasm, tui, testing-showcase]
+        include:
+          - package: cli
+            minimum: 95
+          - package: observability
+            minimum: 85
+          - package: vapor-example
+            minimum: 90
+          - package: wasm
+            minimum: 100
+          - package: tui
+            minimum: 95
+          - package: testing-showcase
+            minimum: 85
     steps:
       - uses: actions/checkout@v4
       - uses: maxim-lobanov/setup-xcode@v1
@@ -22,8 +34,21 @@ jobs:
       - name: Build
         run: swift build
         working-directory: packages/${{ matrix.package }}
-      - name: Test
-        run: swift test
+      - name: Test with coverage
+        run: swift test --enable-code-coverage
+        working-directory: packages/${{ matrix.package }}
+      - name: Enforce production-source line coverage
+        env:
+          MINIMUM: ${{ matrix.minimum }}
+        run: |
+          report=$(swift test --show-codecov-path)
+          prefix="$(pwd)/Sources/"
+          actual=$(jq -r --arg prefix "$prefix" '
+            [.data[0].files[] | select(.filename | startswith($prefix)) | .summary.lines]
+            | (map(.covered) | add) * 100 / (map(.count) | add)
+          ' "$report")
+          printf 'Line coverage: %.2f%% (minimum %.2f%%)\n' "$actual" "$MINIMUM"
+          awk -v actual="$actual" -v required="$MINIMUM" 'BEGIN { exit !(actual >= required) }'
         working-directory: packages/${{ matrix.package }}
 
   swiftui-app:
@@ -46,6 +71,13 @@ jobs:
             -scheme "SwiftUIDemo-macOS" \
             -destination 'platform=macOS'
         working-directory: apps/SwiftUIDemo
+      - name: Test macOS models and AppState integration
+        run: |
+          xcodebuild test \
+            -project SwiftUIDemo.xcodeproj \
+            -scheme "SwiftUIDemo-macOS" \
+            -destination 'platform=macOS'
+        working-directory: apps/SwiftUIDemo
       - name: Build iOS (no signing)
         run: |
           xcodebuild build \
@@ -54,6 +86,59 @@ jobs:
             -destination 'generic/platform=iOS' \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
         working-directory: apps/SwiftUIDemo
+      - name: Test iOS snapshots and UI journeys
+        run: |
+          mkdir -p TestResults
+          simulator_id=$(xcrun simctl list devices available -j | jq -r \
+            '[.devices[][] | select(.name | startswith("iPhone"))][0].udid')
+          test -n "$simulator_id"
+          xcodebuild test \
+            -project SwiftUIDemo.xcodeproj \
+            -scheme "SwiftUIDemo-iOS" \
+            -destination "platform=iOS Simulator,id=$simulator_id" \
+            -resultBundlePath TestResults/SwiftUIDemo.xcresult \
+            -enableCodeCoverage YES
+        working-directory: apps/SwiftUIDemo
+      - name: Enforce SwiftUI app coverage
+        run: |
+          actual=$(xcrun xccov view --report --json TestResults/SwiftUIDemo.xcresult | jq -r '
+            .targets[] | select(.name == "SwiftUIDemo.app") | .lineCoverage * 100
+          ')
+          printf 'SwiftUIDemo.app line coverage: %.2f%% (minimum 95.00%%)\n' "$actual"
+          awk -v actual="$actual" 'BEGIN { exit !(actual >= 95) }'
+        working-directory: apps/SwiftUIDemo
+      - name: Preserve SwiftUI test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: swiftui-test-evidence
+          path: apps/SwiftUIDemo/TestResults
+
+  apple-app-tests:
+    name: Apple app tests, snapshots, and coverage
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Install xcodegen
+        run: brew install xcodegen
+      - name: Run Menu Bar, Pomodoro, and Widget proof suites
+        run: |
+          simulator_name=$(xcrun simctl list devices available -j | jq -r \
+            '[.devices[][] | select(.name | startswith("iPhone"))][0].name')
+          test -n "$simulator_name"
+          SIMULATOR_NAME="$simulator_name" ./scripts/test-apple-apps.sh
+      - name: Preserve Apple app test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apple-app-test-evidence
+          path: |
+            apps/MenuBarDemo/TestResults
+            apps/Pomodoro/TestResults
+            apps/WidgetDemo/TestResults
 
   menubar-app:
     name: MenuBarDemo (xcodebuild)

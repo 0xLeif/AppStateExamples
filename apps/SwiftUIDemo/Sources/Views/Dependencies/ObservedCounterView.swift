@@ -30,19 +30,19 @@ internal struct ObservedCounterView: View {
 
             Section {
                 Button("Tick (+1)") {
-                    Task { @MainActor in
-                        await service.tick()
-                    }
+                    service.tick()
                 }
                 .accessibilityIdentifier("TickButton")
 
                 Button("Reset", role: .destructive) {
-                    Task { @MainActor in
-                        await service.reset()
-                    }
+                    service.reset()
                 }
+                .accessibilityIdentifier("ResetServiceButton")
             } footer: {
-                Text("The service is a shared singleton via `@AppDependency`/`@ObservedDependency` — its state persists as long as the app runs.")
+                Text(
+                    "The service is a shared singleton via `@AppDependency`/`@ObservedDependency` — "
+                        + "its state persists as long as the app runs."
+                )
             }
         }
         .navigationTitle("Observable Service")

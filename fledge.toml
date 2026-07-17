@@ -1,0 +1,38 @@
+# fledge.toml — project task definitions
+# Docs: https://github.com/CorvidLabs/fledge#task-runner
+
+[tasks.test-packages]
+cmd = "./scripts/test-packages.sh"
+description = "Run every standalone Swift package test suite"
+
+[tasks.coverage-packages]
+cmd = "./scripts/coverage-packages.sh"
+description = "Measure production-source line, function, and region coverage for every Swift package"
+
+[tasks.build-swiftui]
+cmd = "./scripts/build-swiftui.sh"
+description = "Generate and compile the SwiftUI catalog for iOS and macOS"
+
+[tasks.build-apple-apps]
+cmd = "./scripts/build-apple-apps.sh"
+description = "Generate and compile the menu bar, Pomodoro, and widget examples"
+
+[tasks.test-apple-apps]
+cmd = "./scripts/test-apple-apps.sh"
+description = "Run Apple-app unit suites with code coverage"
+
+[tasks.test-swiftui]
+cmd = "./scripts/test-swiftui.sh"
+description = "Run SwiftUI snapshot and UI tests on an iOS simulator"
+
+[tasks.coverage-swiftui]
+cmd = "./scripts/coverage-swiftui.sh"
+description = "Run SwiftUI tests with coverage and report production-target coverage"
+
+[tasks.evidence]
+cmd = "./scripts/render-swiftui-gif.sh"
+description = "Rebuild the SwiftUI tour GIF from the five verified UI-test frames"
+
+[tasks.ci]
+cmd = "fledge run test-packages && fledge run build-swiftui && fledge run build-apple-apps && fledge run test-apple-apps"
+description = "Run the portable package tests and Apple-platform compile gates"
