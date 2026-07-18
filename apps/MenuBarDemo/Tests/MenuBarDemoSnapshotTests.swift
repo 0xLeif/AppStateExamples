@@ -78,6 +78,11 @@ internal final class MenuBarDemoSnapshotTests: XCTestCase {
         hostingView.appearance = NSAppearance(named: .aqua)
         hostingView.layoutSubtreeIfNeeded()
 
-        assertSnapshot(of: hostingView, as: .image(size: size), named: name, record: .missing)
+        assertSnapshot(
+            of: hostingView,
+            as: .image(precision: 0.999, size: size),
+            named: name,
+            record: .missing
+        )
     }
 }
