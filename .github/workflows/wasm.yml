@@ -10,20 +10,14 @@ jobs:
   wasm-build:
     name: wasm-example (SwiftWasm)
     runs-on: ubuntu-latest
+    container: swift:6.3.3-noble
     # AppState 3.0 resolves the transitive WASM dependency blocker, so the pinned
     # SwiftWasm toolchain is now a required cross-platform gate.
     steps:
       - uses: actions/checkout@v4
 
-      # SwiftWasm first ships Observation in its Swift 6.3 SDK. Pin the compiler and
-      # SDK to the exact same official snapshot so AppState 3 cross-compiles reproducibly.
-      - name: Import Swift signing keys
-        run: curl --fail --silent --show-error --location --compressed https://www.swift.org/keys/all-keys.asc | gpg --import -
-      - name: Set up Swift
-        uses: swift-actions/setup-swift@v3
-        with:
-          swift-version: '6.3-snapshot-2026-06-11'
-
+      # SwiftWasm first ships Observation in its Swift 6.3 SDK. Pin the release compiler
+      # and compatible SDK snapshot so AppState 3 cross-compiles reproducibly.
       - name: Set up SwiftWasm
         id: swiftwasm
         uses: swiftwasm/setup-swiftwasm@v2
