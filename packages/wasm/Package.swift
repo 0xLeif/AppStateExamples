@@ -20,7 +20,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/0xLeif/AppState.git",
-            revision: "a6d7b8439387107a9abea17e0c93dbe86ff2067d"
+            exact: "3.0.1"
         ),
         .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", from: "0.19.0")
     ],

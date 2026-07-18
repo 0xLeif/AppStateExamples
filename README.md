@@ -1,6 +1,6 @@
 # AppState Examples
 
-A tour of [**AppState 3.0**](https://github.com/0xLeif/AppState) across every place Swift runs — command line, server, browser (WebAssembly), and Apple platforms. Each example is independently pinned to the stable `AppState` `3.0.0` release, so the toolchains never collide.
+A tour of [**AppState 3.0**](https://github.com/0xLeif/AppState) across every place Swift runs — command line, server, browser (WebAssembly), and Apple platforms. Each example is independently pinned to the stable `AppState` `3.0.1` release, so the toolchains never collide.
 
 The two things every example shows off:
 

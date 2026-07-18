@@ -3,7 +3,7 @@ name: Pomodoro
 packages:
   AppState:
     url: https://github.com/0xLeif/AppState.git
-    exactVersion: 3.0.0
+    exactVersion: 3.0.1
   SnapshotTesting:
     url: https://github.com/pointfreeco/swift-snapshot-testing.git
     exactVersion: 1.19.3

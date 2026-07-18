@@ -105,7 +105,7 @@ Sources/
 - Swift 6.0
 - [xcodegen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`)
 
-The package dependency (`AppState` exact `3.0.0`) is resolved automatically by Xcode on first open.
+The package dependency (`AppState` exact `3.0.1`) is resolved automatically by Xcode on first open.
 
 ## Verification
 
