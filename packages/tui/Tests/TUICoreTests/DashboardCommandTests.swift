@@ -5,14 +5,14 @@ import AppState
 // MARK: - DashboardCommandTests
 
 /// Verifies that each `DashboardCommand` mutates exactly the expected scalar state.
-final class DashboardCommandTests: XCTestCase {
+internal final class DashboardCommandTests: XCTestCase {
 
     // MARK: - Setup
 
     /// Resets all dashboard state before each test.
     /// Note: do NOT call `super.setUp()` — it triggers a concurrency assertion in Swift 6.1 on Linux.
     @MainActor
-    override func setUp() async throws {
+    internal override func setUp() async throws {
         var counter = Application.state(\.counter)
         counter.value = 0
         var temperature = Application.state(\.temperature)
@@ -26,13 +26,13 @@ final class DashboardCommandTests: XCTestCase {
     // MARK: - increment
 
     @MainActor
-    func testIncrementIncreasesCounterByOne() {
+    internal func testIncrementIncreasesCounterByOne() async {
         DashboardController.apply(.increment)
         XCTAssertEqual(Application.state(\.counter).value, 1)
     }
 
     @MainActor
-    func testIncrementMultipleTimes() {
+    internal func testIncrementMultipleTimes() async {
         DashboardController.apply(.increment)
         DashboardController.apply(.increment)
         DashboardController.apply(.increment)
@@ -40,7 +40,7 @@ final class DashboardCommandTests: XCTestCase {
     }
 
     @MainActor
-    func testIncrementDoesNotChangeTemperatureOrPause() {
+    internal func testIncrementDoesNotChangeTemperatureOrPause() async {
         DashboardController.apply(.increment)
         XCTAssertEqual(Application.state(\.temperature).value, 20.0)
         XCTAssertFalse(Application.state(\.paused).value)
@@ -49,13 +49,13 @@ final class DashboardCommandTests: XCTestCase {
     // MARK: - decrement
 
     @MainActor
-    func testDecrementDecreasesCounterByOne() {
+    internal func testDecrementDecreasesCounterByOne() async {
         DashboardController.apply(.decrement)
         XCTAssertEqual(Application.state(\.counter).value, -1)
     }
 
     @MainActor
-    func testDecrementFromPositive() {
+    internal func testDecrementFromPositive() async {
         DashboardController.apply(.increment)
         DashboardController.apply(.increment)
         DashboardController.apply(.decrement)
@@ -63,7 +63,7 @@ final class DashboardCommandTests: XCTestCase {
     }
 
     @MainActor
-    func testDecrementDoesNotChangeTemperatureOrPause() {
+    internal func testDecrementDoesNotChangeTemperatureOrPause() async {
         DashboardController.apply(.decrement)
         XCTAssertEqual(Application.state(\.temperature).value, 20.0)
         XCTAssertFalse(Application.state(\.paused).value)
@@ -72,13 +72,13 @@ final class DashboardCommandTests: XCTestCase {
     // MARK: - warmer
 
     @MainActor
-    func testWarmerIncreasesTemperatureByFive() {
+    internal func testWarmerIncreasesTemperatureByFive() async {
         DashboardController.apply(.warmer)
         XCTAssertEqual(Application.state(\.temperature).value, 25.0, accuracy: 0.001)
     }
 
     @MainActor
-    func testWarmerClampsAtMaximum() {
+    internal func testWarmerClampsAtMaximum() async {
         // Push temperature well past the maximum.
         for _ in 0..<30 {
             DashboardController.apply(.warmer)
@@ -91,7 +91,7 @@ final class DashboardCommandTests: XCTestCase {
     }
 
     @MainActor
-    func testWarmerDoesNotChangeCounter() {
+    internal func testWarmerDoesNotChangeCounter() async {
         DashboardController.apply(.warmer)
         XCTAssertEqual(Application.state(\.counter).value, 0)
     }
@@ -99,13 +99,13 @@ final class DashboardCommandTests: XCTestCase {
     // MARK: - cooler
 
     @MainActor
-    func testCoolerDecreasesTemperatureByFive() {
+    internal func testCoolerDecreasesTemperatureByFive() async {
         DashboardController.apply(.cooler)
         XCTAssertEqual(Application.state(\.temperature).value, 15.0, accuracy: 0.001)
     }
 
     @MainActor
-    func testCoolerClampsAtMinimum() {
+    internal func testCoolerClampsAtMinimum() async {
         // Push temperature well past the minimum.
         for _ in 0..<30 {
             DashboardController.apply(.cooler)
@@ -118,7 +118,7 @@ final class DashboardCommandTests: XCTestCase {
     }
 
     @MainActor
-    func testCoolerDoesNotChangeCounter() {
+    internal func testCoolerDoesNotChangeCounter() async {
         DashboardController.apply(.cooler)
         XCTAssertEqual(Application.state(\.counter).value, 0)
     }
@@ -126,20 +126,20 @@ final class DashboardCommandTests: XCTestCase {
     // MARK: - togglePause
 
     @MainActor
-    func testTogglePauseFlipsFalseToTrue() {
+    internal func testTogglePauseFlipsFalseToTrue() async {
         DashboardController.apply(.togglePause)
         XCTAssertTrue(Application.state(\.paused).value)
     }
 
     @MainActor
-    func testTogglePauseFlipsTrueToFalse() {
+    internal func testTogglePauseFlipsTrueToFalse() async {
         DashboardController.apply(.togglePause)
         DashboardController.apply(.togglePause)
         XCTAssertFalse(Application.state(\.paused).value)
     }
 
     @MainActor
-    func testTogglePauseDoesNotChangeCounterOrTemperature() {
+    internal func testTogglePauseDoesNotChangeCounterOrTemperature() async {
         DashboardController.apply(.togglePause)
         XCTAssertEqual(Application.state(\.counter).value, 0)
         XCTAssertEqual(Application.state(\.temperature).value, 20.0, accuracy: 0.001)
@@ -148,7 +148,7 @@ final class DashboardCommandTests: XCTestCase {
     // MARK: - reset
 
     @MainActor
-    func testResetRestoresAllStateToDefaults() {
+    internal func testResetRestoresAllStateToDefaults() async {
         DashboardController.apply(.increment)
         DashboardController.apply(.increment)
         DashboardController.apply(.warmer)
@@ -164,20 +164,20 @@ final class DashboardCommandTests: XCTestCase {
     // MARK: - quit
 
     @MainActor
-    func testQuitReturnsFalse() {
+    internal func testQuitReturnsFalse() async {
         let shouldContinue = DashboardController.apply(.quit)
         XCTAssertFalse(shouldContinue)
     }
 
     @MainActor
-    func testNonQuitCommandReturnsTrue() {
+    internal func testNonQuitCommandReturnsTrue() async {
         let shouldContinue = DashboardController.apply(.increment)
         XCTAssertTrue(shouldContinue)
     }
 
     // MARK: - Key Mapping
 
-    func testKeyMappingCoversAllNonQuitCommands() {
+    internal func testKeyMappingCoversAllNonQuitCommands() {
         XCTAssertEqual(DashboardCommand.from(key: "i"), .increment)
         XCTAssertEqual(DashboardCommand.from(key: "d"), .decrement)
         XCTAssertEqual(DashboardCommand.from(key: "w"), .warmer)
@@ -187,7 +187,7 @@ final class DashboardCommandTests: XCTestCase {
         XCTAssertEqual(DashboardCommand.from(key: "q"), .quit)
     }
 
-    func testUnrecognisedKeyReturnsNil() {
+    internal func testUnrecognisedKeyReturnsNil() {
         XCTAssertNil(DashboardCommand.from(key: "x"))
         XCTAssertNil(DashboardCommand.from(key: "z"))
         XCTAssertNil(DashboardCommand.from(key: " "))

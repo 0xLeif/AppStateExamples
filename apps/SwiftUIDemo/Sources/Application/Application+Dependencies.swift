@@ -12,6 +12,7 @@ extension Application {
     }
 
     /// An `Observable` counter service, observed via `@ObservedDependency`.
+    @MainActor
     internal var counterService: Dependency<LiveCounterService> {
         dependency(LiveCounterService(), id: "counterService")
     }

@@ -7,8 +7,9 @@ import AppState
 ///
 /// Selecting a different accent propagates to all signed-in devices via
 /// `NSUbiquitousKeyValueStore`. A valid iCloud-capable signing configuration is
-/// required for cross-device sync to function; the value is still stored and read
-/// locally without it.
+/// required for cross-device sync to function. Without the ubiquity KV entitlement
+/// (e.g. local ad-hoc builds), `MenuBarDemoApp` installs a local fallback at launch
+/// so the value is stored and read locally via `UserDefaults` instead of crashing.
 internal struct AccentSyncSectionView: View {
 
     // MARK: Constants
@@ -28,7 +29,9 @@ internal struct AccentSyncSectionView: View {
         VStack(alignment: .leading, spacing: 8) {
             SectionHeaderView(
                 title: "@SyncState",
-                subtitle: "iCloud KV — synced across all signed-in devices"
+                subtitle: Application.hasUbiquityKVStoreEntitlement
+                    ? "iCloud KV — synced across all signed-in devices"
+                    : "Local fallback — no iCloud KV entitlement"
             )
 
             Picker("Accent", selection: $accentName) {

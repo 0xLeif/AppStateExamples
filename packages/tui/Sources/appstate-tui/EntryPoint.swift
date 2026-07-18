@@ -188,13 +188,13 @@ internal struct EntryPoint {
     /// Clears the terminal screen using ANSI escape codes.
     private static func clearScreen() {
         print("\u{1B}[2J\u{1B}[H", terminator: "")
-        fflush(stdout)
+        _ = fflush(nil)
     }
 
     /// Prints the interactive prompt.
     private static func printPrompt() {
         print("\nPress a key (i/d/w/c/p/r/q): ", terminator: "")
-        fflush(stdout)
+        _ = fflush(nil)
     }
 }
 

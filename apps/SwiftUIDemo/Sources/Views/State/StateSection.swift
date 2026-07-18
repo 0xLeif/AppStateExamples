@@ -21,12 +21,21 @@ internal struct StateSection: View {
                     NavigationLink("Username") {
                         UsernameView()
                     }
+                    .accessibilityIdentifier("UsernameNavLink")
                 }
 
                 Section("File System (@FileState)") {
                     NavigationLink("Profile Editor") {
                         ProfileEditorView()
                     }
+                    .accessibilityIdentifier("ProfileEditorNavLink")
+                }
+
+                Section("Composite State") {
+                    NavigationLink("Slice Editor") {
+                        ProfileSliceView()
+                    }
+                    .accessibilityIdentifier("SlicesNavLink")
                 }
             }
             .navigationTitle("State")

@@ -11,7 +11,7 @@ import Vapor
 /// - Parameter app: The `Vapor.Application` to configure.
 public func configure(_ app: Vapor.Application) async throws {
     // Enable AppState logging in development so dependency resolution is visible.
-    await MainActor.run {
+    _ = await MainActor.run {
         Application.logging(isEnabled: app.environment == .development)
     }
 

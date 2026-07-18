@@ -1,5 +1,6 @@
 import WidgetKit
 import SwiftUI
+import WidgetDemoCore
 
 // MARK: - Focus Widget
 

@@ -3,7 +3,10 @@ name: MenuBarDemo
 packages:
   AppState:
     url: https://github.com/0xLeif/AppState.git
-    exactVersion: 3.0.0-rc.1
+    exactVersion: 3.0.1
+  SnapshotTesting:
+    url: https://github.com/pointfreeco/swift-snapshot-testing.git
+    exactVersion: 1.19.3
 
 options:
   bundleIdPrefix: com.0xleif
@@ -34,6 +37,21 @@ targets:
         INFOPLIST_FILE: Sources/App/Info.plist
         MACOSX_DEPLOYMENT_TARGET: "14.0"
 
+  MenuBarDemoTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests
+    dependencies:
+      - target: MenuBarDemo
+      - package: SnapshotTesting
+        product: SnapshotTesting
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.0xleif.AppStateMenuBarDemo.tests
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        GENERATE_INFOPLIST_FILE: YES
+
 schemes:
   MenuBarDemo:
     build:
@@ -41,6 +59,10 @@ schemes:
         MenuBarDemo: all
     run:
       config: Debug
+    test:
+      config: Debug
+      targets:
+        - MenuBarDemoTests
     profile:
       config: Release
     analyze:

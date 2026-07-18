@@ -3,7 +3,10 @@ name: WidgetDemo
 packages:
   AppState:
     url: https://github.com/0xLeif/AppState.git
-    exactVersion: 3.0.0-rc.1
+    exactVersion: 3.0.1
+  SnapshotTesting:
+    url: https://github.com/pointfreeco/swift-snapshot-testing.git
+    exactVersion: 1.19.3
 
 options:
   bundleIdPrefix: com.0xleif
@@ -17,15 +20,35 @@ settings:
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
     OTHER_SWIFT_FLAGS: -enable-experimental-feature StrictConcurrency
+    ENABLE_TESTABILITY: YES
 
 targets:
+  WidgetDemoCore:
+    type: framework
+    platform: iOS
+    sources:
+      - path: Sources/Shared
+      - path: Sources/Widget/FocusEntry.swift
+      - path: Sources/Widget/FocusTimelineSource.swift
+      - path: Sources/Widget/FocusWidgetView.swift
+    dependencies:
+      - package: AppState
+        product: AppState
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.0xleif.AppStateWidgetDemo.Core
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        GENERATE_INFOPLIST_FILE: YES
+
   WidgetDemo:
     type: application
     platform: iOS
     sources:
       - path: Sources/App
-      - path: Sources/Shared
     dependencies:
+      - target: WidgetDemoCore
+      - target: WidgetDemoWidget
+        embed: true
       - package: AppState
         product: AppState
     settings:
@@ -41,8 +64,12 @@ targets:
     platform: iOS
     sources:
       - path: Sources/Widget
-      - path: Sources/Shared
+        excludes:
+          - FocusEntry.swift
+          - FocusTimelineSource.swift
+          - FocusWidgetView.swift
     dependencies:
+      - target: WidgetDemoCore
       - package: AppState
         product: AppState
     settings:
@@ -53,6 +80,37 @@ targets:
         IPHONEOS_DEPLOYMENT_TARGET: "17.0"
         CODE_SIGN_ENTITLEMENTS: SupportingFiles/WidgetDemoWidget.entitlements
 
+  WidgetDemoTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests
+    dependencies:
+      - target: WidgetDemo
+      - target: WidgetDemoCore
+      - package: AppState
+        product: AppState
+      - package: SnapshotTesting
+        product: SnapshotTesting
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.0xleif.AppStateWidgetDemo.tests
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        GENERATE_INFOPLIST_FILE: YES
+
+  WidgetDemoUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: UITests
+    dependencies:
+      - target: WidgetDemo
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.0xleif.AppStateWidgetDemo.uitests
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        GENERATE_INFOPLIST_FILE: YES
+
 schemes:
   WidgetDemo:
     build:
@@ -61,6 +119,11 @@ schemes:
         WidgetDemoWidget: all
     run:
       config: Debug
+    test:
+      config: Debug
+      targets:
+        - WidgetDemoTests
+        - WidgetDemoUITests
     profile:
       config: Release
     analyze:

@@ -10,6 +10,23 @@ import Foundation
 /// means the routing logic can be covered by unit tests.
 public enum CLIRunner: Sendable {
 
+    // MARK: - Output Collector
+
+    @MainActor
+    fileprivate final class OutputCollector {
+        private var lines: [String] = []
+
+        fileprivate init() {}
+
+        fileprivate func append(_ line: String) {
+            lines.append(line)
+        }
+
+        fileprivate var output: String {
+            lines.joined(separator: "\n")
+        }
+    }
+
     // MARK: - Public Interface
 
     /// Runs the CLI with the provided argument vector and prints to stdout.
@@ -17,9 +34,11 @@ public enum CLIRunner: Sendable {
     /// - Parameter arguments: Typically `CommandLine.arguments`; element 0 is
     ///   the executable path and is ignored.
     @MainActor
-    public static func run(arguments: [String]) async {
+    @discardableResult
+    public static func run(arguments: [String]) async -> String {
         let result = await dispatch(arguments: arguments)
         print(result)
+        return result
     }
 
     // MARK: - Dispatch
@@ -84,18 +103,12 @@ public enum CLIRunner: Sendable {
     /// Runs the headless observation demo and collects its output lines.
     @MainActor
     private static func runWatch() async -> String {
-        // Use a class-based collector so the @Sendable closure can mutate it safely.
-        final class OutputCollector: @unchecked Sendable {
-            var lines: [String] = []
-            func append(_ line: String) { lines.append(line) }
-        }
-
         let collector = OutputCollector()
         await ObservationDemo.run(mutationCount: 5) { [collector] line in
             collector.append(line)
         }
 
-        return collector.lines.joined(separator: "\n")
+        return collector.output
     }
 
     // MARK: - Usage

@@ -6,12 +6,12 @@ import AppState
 
 /// Verifies that `DashboardController.render()` produces frames containing
 /// expected substrings for various state configurations.
-final class RenderTests: XCTestCase {
+internal final class RenderTests: XCTestCase {
 
     // MARK: - Setup
 
     @MainActor
-    override func setUp() async throws {
+    internal override func setUp() async throws {
         var counter = Application.state(\.counter)
         counter.value = 0
         var temperature = Application.state(\.temperature)
@@ -25,37 +25,37 @@ final class RenderTests: XCTestCase {
     // MARK: - Structure
 
     @MainActor
-    func testRenderContainsDashboardLabel() {
+    internal func testRenderContainsDashboardLabel() async {
         let frame = DashboardController.render()
         XCTAssertTrue(frame.contains("AppState Live Dashboard"))
     }
 
     @MainActor
-    func testRenderContainsCounterRow() {
+    internal func testRenderContainsCounterRow() async {
         let frame = DashboardController.render()
         XCTAssertTrue(frame.contains("Counter"))
     }
 
     @MainActor
-    func testRenderContainsTemperatureRow() {
+    internal func testRenderContainsTemperatureRow() async {
         let frame = DashboardController.render()
         XCTAssertTrue(frame.contains("Temp"))
     }
 
     @MainActor
-    func testRenderContainsGaugeRow() {
+    internal func testRenderContainsGaugeRow() async {
         let frame = DashboardController.render()
         XCTAssertTrue(frame.contains("Gauge"))
     }
 
     @MainActor
-    func testRenderContainsStatusRow() {
+    internal func testRenderContainsStatusRow() async {
         let frame = DashboardController.render()
         XCTAssertTrue(frame.contains("Status"))
     }
 
     @MainActor
-    func testRenderContainsHelpKeys() {
+    internal func testRenderContainsHelpKeys() async {
         let frame = DashboardController.render()
         XCTAssertTrue(frame.contains("[i]"))
         XCTAssertTrue(frame.contains("[d]"))
@@ -69,7 +69,7 @@ final class RenderTests: XCTestCase {
     // MARK: - Counter Values
 
     @MainActor
-    func testRenderShowsCorrectCounterValue() {
+    internal func testRenderShowsCorrectCounterValue() async {
         DashboardController.apply(.increment)
         DashboardController.apply(.increment)
         DashboardController.apply(.increment)
@@ -78,7 +78,7 @@ final class RenderTests: XCTestCase {
     }
 
     @MainActor
-    func testRenderShowsNegativeCounter() {
+    internal func testRenderShowsNegativeCounter() async {
         DashboardController.apply(.decrement)
         let frame = DashboardController.render()
         XCTAssertTrue(frame.contains("-1"))
@@ -87,14 +87,14 @@ final class RenderTests: XCTestCase {
     // MARK: - Temperature Values
 
     @MainActor
-    func testRenderShowsTemperatureAfterWarmer() {
+    internal func testRenderShowsTemperatureAfterWarmer() async {
         DashboardController.apply(.warmer)
         let frame = DashboardController.render()
         XCTAssertTrue(frame.contains("25.0"))
     }
 
     @MainActor
-    func testRenderShowsTemperatureAfterCooler() {
+    internal func testRenderShowsTemperatureAfterCooler() async {
         DashboardController.apply(.cooler)
         let frame = DashboardController.render()
         XCTAssertTrue(frame.contains("15.0"))
@@ -103,20 +103,20 @@ final class RenderTests: XCTestCase {
     // MARK: - Status
 
     @MainActor
-    func testRenderShowsRunningStatusByDefault() {
+    internal func testRenderShowsRunningStatusByDefault() async {
         let frame = DashboardController.render()
         XCTAssertTrue(frame.contains("RUNNING"))
     }
 
     @MainActor
-    func testRenderShowsPausedStatusWhenPaused() {
+    internal func testRenderShowsPausedStatusWhenPaused() async {
         DashboardController.apply(.togglePause)
         let frame = DashboardController.render()
         XCTAssertTrue(frame.contains("PAUSED"))
     }
 
     @MainActor
-    func testRenderShowsRunningStatusAfterUnpause() {
+    internal func testRenderShowsRunningStatusAfterUnpause() async {
         DashboardController.apply(.togglePause)
         DashboardController.apply(.togglePause)
         let frame = DashboardController.render()
@@ -126,7 +126,7 @@ final class RenderTests: XCTestCase {
     // MARK: - Multiline Output
 
     @MainActor
-    func testRenderProducesMultipleLines() {
+    internal func testRenderProducesMultipleLines() async {
         let frame = DashboardController.render()
         let lineCount = frame.components(separatedBy: "\n").count
         XCTAssertGreaterThan(lineCount, 8, "Dashboard should have more than 8 lines")

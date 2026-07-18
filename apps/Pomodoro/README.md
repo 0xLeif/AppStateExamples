@@ -113,3 +113,9 @@ func testAdvancesPhaseAtZero() async throws {
     XCTAssertEqual(phase, .shortBreak)
 }
 ```
+
+## Verification
+
+From the repository root, `fledge run test-apple-apps` runs seven engine behavior tests and six image-regression
+snapshots covering idle/running focus, short and long breaks, settings, and reusable components. The latest full run
+covered 96.00% of `Pomodoro.app`; CI enforces a 95% minimum.

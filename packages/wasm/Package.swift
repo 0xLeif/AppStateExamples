@@ -18,7 +18,10 @@ let package = Package(
         .library(name: "WASMCore", targets: ["WASMCore"])
     ],
     dependencies: [
-        .package(url: "https://github.com/0xLeif/AppState.git", exact: "3.0.0-rc.1"),
+        .package(
+            url: "https://github.com/0xLeif/AppState.git",
+            exact: "3.0.1"
+        ),
         .package(url: "https://github.com/swiftwasm/JavaScriptKit.git", from: "0.19.0")
     ],
     targets: [

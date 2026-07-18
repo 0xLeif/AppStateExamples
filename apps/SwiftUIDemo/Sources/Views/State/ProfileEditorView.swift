@@ -44,13 +44,16 @@ internal struct ProfileEditorView: View {
                         displayNameDraft = ""
                         bioDraft = ""
                     }
+                    .accessibilityIdentifier("DeleteProfileButton")
                 }
             }
 
             if let savedProfile = profile {
                 Section("Saved on Disk") {
                     LabeledContent("Name", value: savedProfile.displayName)
+                        .accessibilityIdentifier("SavedProfileName")
                     LabeledContent("Bio", value: savedProfile.bio.isEmpty ? "(empty)" : savedProfile.bio)
+                        .accessibilityIdentifier("SavedProfileBio")
                 }
             }
         }

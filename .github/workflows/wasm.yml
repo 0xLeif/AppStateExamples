@@ -10,25 +10,31 @@ jobs:
   wasm-build:
     name: wasm-example (SwiftWasm)
     runs-on: ubuntu-latest
-    # Best-effort: the SwiftWasm SDK lags mainline Swift, so the cross-compile is
-    # informational and must not gate the workflow. The host job below is the real gate.
-    continue-on-error: true
+    container: swift:6.3.3-noble
+    # AppState 3.0 resolves the transitive WASM dependency blocker, so the pinned
+    # SwiftWasm toolchain is now a required cross-platform gate.
     steps:
       - uses: actions/checkout@v4
 
-      # Pin a Swift toolchain that has a matching SwiftWasm SDK release (the action
-      # derives the SDK tag from the active Swift version; the runner's preinstalled
-      # bleeding-edge Swift has no SwiftWasm release yet). See https://book.swiftwasm.org.
-      - name: Set up Swift
-        uses: swift-actions/setup-swift@v2
-        with:
-          swift-version: '6.0.3'
+      # SwiftWasm first ships Observation in its Swift 6.3 SDK. Pin the release compiler
+      # and compatible SDK snapshot so AppState 3 cross-compiles reproducibly.
+      - name: Install SwiftWasm SDK
+        env:
+          SWIFTWASM_ASSET: swift-wasm-6.3-SNAPSHOT-2026-06-11-a-wasm32-unknown-wasip1.artifactbundle.zip
+          SWIFTWASM_RELEASE: https://github.com/swiftwasm/swift/releases/download/swift-wasm-6.3-SNAPSHOT-2026-06-11-a
+        run: |
+          apt-get update
+          apt-get install --yes --no-install-recommends ca-certificates curl
+          curl --fail --location --retry 3 --output "/tmp/${SWIFTWASM_ASSET}" \
+            "${SWIFTWASM_RELEASE}/${SWIFTWASM_ASSET}"
+          curl --fail --location --retry 3 --output "/tmp/${SWIFTWASM_ASSET}.sha256" \
+            "${SWIFTWASM_RELEASE}/${SWIFTWASM_ASSET}.sha256"
+          cd /tmp
+          sed "s|$|  ${SWIFTWASM_ASSET}|" "${SWIFTWASM_ASSET}.sha256" | sha256sum --check -
+          swift sdk install "/tmp/${SWIFTWASM_ASSET}"
 
-      - name: Set up SwiftWasm
-        uses: swiftwasm/setup-swiftwasm@v2
-
-      - name: Build for wasm32-unknown-wasi
-        run: swift build --swift-sdk wasm32-unknown-wasi
+      - name: Build for wasm32-unknown-wasip1
+        run: swift build --swift-sdk 6.3-SNAPSHOT-2026-06-11-a-wasm32-unknown-wasip1
         working-directory: packages/wasm
 
   wasm-core-host:
@@ -37,15 +43,12 @@ jobs:
     # `#if canImport(JavaScriptKit)`).
     name: WASMCore (host)
     runs-on: ubuntu-latest
-    # Informational: WASMCore uses State<[TodoItem]>, which hits AppState's Linux
-    # collection-cast crash (0xLeif/AppState#151). Passes on macOS.
-    continue-on-error: true
     steps:
-      # setup-swift rather than the swift:6.1 image, which ships a broken
-      # libswiftObservation.so. See linux.yml.
-      - uses: swift-actions/setup-swift@v2
+      - name: Import Swift signing keys
+        run: curl --fail --silent --show-error --location --compressed https://www.swift.org/keys/all-keys.asc | gpg --import -
+      - uses: swift-actions/setup-swift@v3
         with:
-          swift-version: '6.1.0'
+          swift-version: '6.0.3'
       - uses: actions/checkout@v4
       - name: Test WASMCore
         run: swift test

@@ -1,6 +1,7 @@
 #if canImport(SwiftData)
-import AppState
+import Foundation
 import SwiftData
+import AppState
 
 // MARK: - Application SwiftData Extensions
 
@@ -34,21 +35,30 @@ extension Application {
 /// Creates the `ModelContainer` for the app's SwiftData schema.
 ///
 /// Prefers a persistent on-disk store; falls back to in-memory if the persistent
-/// store cannot be created, surfacing the error via `ApplicationLogger` rather
-/// than crashing with `fatalError`.
+/// store cannot be created and reports the degradation before using the fallback.
 private func makeModelContainer() -> ModelContainer {
+    if ProcessInfo.processInfo.arguments.contains("--ui-testing"),
+       let testContainer = try? ModelContainer(
+           for: TodoItem.self,
+           configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+       ) {
+        return testContainer
+    }
+
     do {
         return try ModelContainer(for: TodoItem.self)
     } catch {
         // Log the degradation. In production code you would surface this through your
         // own logging infrastructure; for this demo a print is sufficient.
         print("[SwiftUIDemo] Persistent ModelContainer unavailable (\(error)). Using in-memory store.")
-        // The in-memory fallback should never fail; treat failure here as a fatal
-        // configuration error — there is nothing meaningful to recover from.
-        return try! ModelContainer(
+        if let fallback = try? ModelContainer(
             for: TodoItem.self,
             configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-        )
+        ) {
+            return fallback
+        }
+
+        preconditionFailure("SwiftUIDemo could not create either a persistent or in-memory ModelContainer")
     }
 }
 #endif

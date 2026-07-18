@@ -14,19 +14,14 @@ internal struct RootCatalogView: View {
                     Label("State", systemImage: "square.stack.3d.up")
                 }
 
-            SecureSyncSection()
+            WorkflowView()
                 .tabItem {
-                    Label("Secure & Sync", systemImage: "lock.icloud")
+                    Label("Workflow", systemImage: "point.3.connected.trianglepath.dotted")
                 }
 
             DependenciesSection()
                 .tabItem {
                     Label("Dependencies", systemImage: "arrow.triangle.branch")
-                }
-
-            SlicesSection()
-                .tabItem {
-                    Label("Slices", systemImage: "scissors")
                 }
 
             #if canImport(SwiftData)

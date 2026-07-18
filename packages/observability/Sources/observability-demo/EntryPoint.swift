@@ -11,23 +11,23 @@ import Observation
 //   • Any `@AppState`, `@StoredState`, `@FileState`, `@Slice` property wrapper getter
 //
 // For `StoredState`, `FileState`, and `Slice` headless demos we use small
-// `@MainActor` structs. The struct must be declared `var` so property wrapper
-// setters can write back through the enclosing instance.
+// `@MainActor` structs. Their nonmutating wrapper setters write through to
+// application storage, so holder instances can remain constants.
 
 @MainActor
-private struct DemoStoredStateHolder {
-    @StoredState(\.lastEvent) var lastEvent: String
+fileprivate struct DemoStoredStateHolder {
+    @StoredState(\.lastEvent) fileprivate var lastEvent: String
 }
 
 @MainActor
-private struct DemoFileStateHolder {
-    @FileState(\.observationLog) var observationLog: [String]?
+fileprivate struct DemoFileStateHolder {
+    @FileState(\.observationLog) fileprivate var observationLog: [String]?
 }
 
 @MainActor
-private struct DemoSliceHolder {
-    @Slice(\.userProfile, \.score) var score: Int
-    @Slice(\.userProfile, \.displayName) var displayName: String
+fileprivate struct DemoSliceHolder {
+    @Slice(\.userProfile, \.score) fileprivate var score: Int
+    @Slice(\.userProfile, \.displayName) fileprivate var displayName: String
 }
 
 // MARK: - Demo Entry Point
@@ -37,9 +37,9 @@ private struct DemoSliceHolder {
 /// Run with: `swift run observability-demo`
 @main
 @MainActor
-struct ObservabilityDemo {
+internal struct ObservabilityDemo {
 
-    static func main() async {
+    internal static func main() async {
         print(banner("AppState 3.0 — Observation Without SwiftUI"))
 
         await demo1_basicHeadlessObservation()
@@ -173,14 +173,14 @@ struct ObservabilityDemo {
         }
 
         // StoredState — read via @StoredState property wrapper which calls registerObservation().
-        // `var` is required because the @StoredState setter writes through the enclosing struct.
-        var storedHolder = DemoStoredStateHolder()
+        // The wrapper's nonmutating setter writes through to application storage.
+        let storedHolder = DemoStoredStateHolder()
         let storedObserver = StateObserver(label: "lastEvent(StoredState)") {
             storedHolder.lastEvent
         }
 
         // FileState — read via @FileState property wrapper which calls registerObservation().
-        var fileHolder = DemoFileStateHolder()
+        let fileHolder = DemoFileStateHolder()
         let fileObserver = StateObserver(label: "observationLog(FileState)") {
             fileHolder.observationLog?.count ?? 0
         }
@@ -230,7 +230,7 @@ struct ObservabilityDemo {
     private static func demo4_sliceObservation() async {
         printSection("Demo 4 — Slice observation of sub-properties via @Slice wrapper")
 
-        var sliceHolder = DemoSliceHolder()
+        let sliceHolder = DemoSliceHolder()
 
         let scoreObserver = StateObserver(label: "userProfile.score (Slice)") {
             sliceHolder.score

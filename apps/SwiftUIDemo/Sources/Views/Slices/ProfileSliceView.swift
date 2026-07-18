@@ -70,13 +70,21 @@ internal struct ProfileSliceView: View {
             } header: {
                 Text("@OptionalSlice — Profile.displayName (optional root)")
             } footer: {
-                Text("`@OptionalSlice` returns `nil` when the root optional state has no value — no crash, no force-unwrap.")
+                Text(
+                    """
+                    `@OptionalSlice` returns `nil` when the root optional state has no value — \
+                    no crash, no force-unwrap.
+                    """
+                )
             }
 
             Section("Full UserSettings snapshot") {
                 LabeledContent("fontSize", value: "\(Int(fontSize)) pt")
+                    .accessibilityIdentifier("SliceFontSizeValue")
                 LabeledContent("notificationsEnabled", value: notificationsEnabled ? "true" : "false")
+                    .accessibilityIdentifier("SliceNotificationsValue")
                 LabeledContent("motto", value: motto.isEmpty ? "(empty)" : motto)
+                    .accessibilityIdentifier("SliceMottoValue")
             }
         }
         .navigationTitle("Slices")

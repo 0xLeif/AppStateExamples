@@ -6,12 +6,12 @@ import AppState
 
 /// Verifies that injecting a custom `FrameStyling` dependency changes the rendered output,
 /// demonstrating AppState 3.0 dependency overrides in a testable, headless context.
-final class StylingOverrideTests: XCTestCase {
+internal final class StylingOverrideTests: XCTestCase {
 
     // MARK: - Setup
 
     @MainActor
-    override func setUp() async throws {
+    internal override func setUp() async throws {
         var counter = Application.state(\.counter)
         counter.value = 0
         var temperature = Application.state(\.temperature)
@@ -25,7 +25,7 @@ final class StylingOverrideTests: XCTestCase {
     // MARK: - PlainFrameStyling Override
 
     @MainActor
-    func testPlainStylingUsesASCIICharacters() async {
+    internal func testPlainStylingUsesASCIICharacters() async {
         let token = Application.override(\.frameStyling, with: PlainFrameStyling())
 
         let frame = DashboardController.render()
@@ -43,14 +43,14 @@ final class StylingOverrideTests: XCTestCase {
     }
 
     @MainActor
-    func testDefaultStylingUsesBoxDrawingCharacters() {
+    internal func testDefaultStylingUsesBoxDrawingCharacters() async {
         let frame = DashboardController.render()
         XCTAssertTrue(frame.contains("─") || frame.contains("╭"),
                       "Default style should use box-drawing characters")
     }
 
     @MainActor
-    func testOverrideIsRevertedAfterCancel() async {
+    internal func testOverrideIsRevertedAfterCancel() async {
         let token = Application.override(\.frameStyling, with: PlainFrameStyling())
         await token.cancel()
 
@@ -63,7 +63,7 @@ final class StylingOverrideTests: XCTestCase {
     // MARK: - Custom Styling
 
     @MainActor
-    func testCustomStylingReflectedInRender() async {
+    internal func testCustomStylingReflectedInRender() async {
         let token = Application.override(\.frameStyling, with: WideFrameStyling())
 
         let frame = DashboardController.render()
@@ -78,7 +78,7 @@ final class StylingOverrideTests: XCTestCase {
     }
 
     @MainActor
-    func testCustomGaugeCharactersAppearsInRender() async {
+    internal func testCustomGaugeCharactersAppearsInRender() async {
         let token = Application.override(\.frameStyling, with: WideFrameStyling())
 
         let frame = DashboardController.render()

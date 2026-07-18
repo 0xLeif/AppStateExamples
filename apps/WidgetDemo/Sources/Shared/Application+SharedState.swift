@@ -9,13 +9,13 @@ extension Application {
 
     /// The user's current focus session title, stored in the shared App Group UserDefaults.
     /// Both the app and widget extension read and write this value.
-    internal var focusTitle: StoredState<String> {
+    public var focusTitle: StoredState<String> {
         storedState(initial: "Focus Session", id: "focusTitle")
     }
 
     /// The total number of completed focus increments, stored in the shared App Group UserDefaults.
     /// Both the app and widget extension read and display this value.
-    internal var focusCount: StoredState<Int> {
+    public var focusCount: StoredState<Int> {
         storedState(initial: 0, id: "focusCount")
     }
 
@@ -32,7 +32,7 @@ extension Application {
     /// Assigning it to a static property retains it forever without creating a retain cycle.
     @MainActor
     @discardableResult
-    internal static func useSharedDefaults() -> Application.DependencyOverride? {
+    public static func useSharedDefaults() -> Application.DependencyOverride? {
         let suiteName = "group.com.0xleif.AppStateWidgetDemo"
         guard UserDefaults(suiteName: suiteName) != nil else {
             return nil

@@ -8,6 +8,17 @@ import AppState
 /// Composes all feature sections and a quit button into a single scrollable form.
 internal struct MenuBarPopoverView: View {
 
+    // MARK: Properties
+
+    private let secureTokenPresentation: SecureTokenPresentation
+
+    // MARK: Initializer
+
+    /// Creates the popover with live secure state unless a test fixture is supplied.
+    internal init(secureTokenPresentation: SecureTokenPresentation = .live) {
+        self.secureTokenPresentation = secureTokenPresentation
+    }
+
     // MARK: Body
 
     internal var body: some View {
@@ -17,7 +28,7 @@ internal struct MenuBarPopoverView: View {
                 Divider()
                 GreetingSectionView()
                 Divider()
-                SecureTokenSectionView()
+                SecureTokenSectionView(presentation: secureTokenPresentation)
                 Divider()
                 AccentSyncSectionView()
                 Divider()

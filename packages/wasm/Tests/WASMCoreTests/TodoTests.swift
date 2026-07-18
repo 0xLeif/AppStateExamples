@@ -9,12 +9,12 @@ import Observation
 ///
 /// Each test resets shared state in `setUp` to remain isolated and
 /// order-independent.  These run on the host toolchain — no WASM SDK required.
-final class TodoTests: XCTestCase {
+internal final class TodoTests: XCTestCase {
 
     // MARK: - Setup
 
     @MainActor
-    override func setUp() async throws {
+    internal override func setUp() async throws {
         var todos = Application.state(\.todos)
         todos.value = []
         var nextID = Application.state(\.nextTodoID)
@@ -24,7 +24,7 @@ final class TodoTests: XCTestCase {
     // MARK: - addTodo
 
     @MainActor
-    func testAddTodoAppendsItemWithTrimmedText() {
+    internal func testAddTodoAppendsItemWithTrimmedText() async {
         AppActions.addTodo(text: "  Ship WASM example  ")
 
         let items = Application.state(\.todos).value
@@ -34,7 +34,7 @@ final class TodoTests: XCTestCase {
     }
 
     @MainActor
-    func testAddTodoIgnoresWhitespaceOnlyInput() {
+    internal func testAddTodoIgnoresWhitespaceOnlyInput() async {
         AppActions.addTodo(text: "   ")
         AppActions.addTodo(text: "")
 
@@ -42,7 +42,7 @@ final class TodoTests: XCTestCase {
     }
 
     @MainActor
-    func testAddTodoAssignsMonotonicallyIncreasingIDs() {
+    internal func testAddTodoAssignsMonotonicallyIncreasingIDs() async {
         var nextID = Application.state(\.nextTodoID)
         nextID.value = 10
 
@@ -55,13 +55,13 @@ final class TodoTests: XCTestCase {
     }
 
     @MainActor
-    func testAddTodoIncrementsNextID() {
+    internal func testAddTodoIncrementsNextID() async {
         AppActions.addTodo(text: "Item")
         XCTAssertEqual(Application.state(\.nextTodoID).value, 2)
     }
 
     @MainActor
-    func testAddTodoMultipleItems() {
+    internal func testAddTodoMultipleItems() async {
         AppActions.addTodo(text: "Alpha")
         AppActions.addTodo(text: "Beta")
         AppActions.addTodo(text: "Gamma")
@@ -74,7 +74,7 @@ final class TodoTests: XCTestCase {
     // MARK: - removeTodo
 
     @MainActor
-    func testRemoveTodoRemovesOnlyMatchingItem() {
+    internal func testRemoveTodoRemovesOnlyMatchingItem() async {
         var todos = Application.state(\.todos)
         todos.value = [
             TodoItem(id: 1, text: "Keep me"),
@@ -90,7 +90,7 @@ final class TodoTests: XCTestCase {
     }
 
     @MainActor
-    func testRemoveTodoIsNoOpForUnknownID() {
+    internal func testRemoveTodoIsNoOpForUnknownID() async {
         var todos = Application.state(\.todos)
         todos.value = [TodoItem(id: 5, text: "Existing")]
         AppActions.removeTodo(id: 999)
@@ -98,13 +98,13 @@ final class TodoTests: XCTestCase {
     }
 
     @MainActor
-    func testRemoveTodoFromEmptyListIsNoOp() {
+    internal func testRemoveTodoFromEmptyListIsNoOp() async {
         AppActions.removeTodo(id: 1)
         XCTAssertTrue(Application.state(\.todos).value.isEmpty)
     }
 
     @MainActor
-    func testRemoveTodoAllItems() {
+    internal func testRemoveTodoAllItems() async {
         var todos = Application.state(\.todos)
         todos.value = [
             TodoItem(id: 1, text: "A"),
@@ -120,7 +120,7 @@ final class TodoTests: XCTestCase {
     // Observation delivery is verified on Apple platforms only (see CounterTests).
     #if !os(Linux) && !os(Windows)
     @MainActor
-    func testTodosStateChangeFiresObservationCallback() async {
+    internal func testTodosStateChangeFiresObservationCallback() async {
         let fired = FiredBox()
 
         withObservationTracking {
@@ -136,7 +136,7 @@ final class TodoTests: XCTestCase {
     }
 
     @MainActor
-    func testRemoveAlsoFiresObservationCallback() async {
+    internal func testRemoveAlsoFiresObservationCallback() async {
         var todos = Application.state(\.todos)
         todos.value = [TodoItem(id: 1, text: "Existing")]
 
@@ -155,7 +155,7 @@ final class TodoTests: XCTestCase {
     }
 
     @MainActor
-    func testRearmCatchesSubsequentMutations() async {
+    internal func testRearmCatchesSubsequentMutations() async {
         let observer = RearmingTodoObserver(limit: 2)
         observer.start()
 

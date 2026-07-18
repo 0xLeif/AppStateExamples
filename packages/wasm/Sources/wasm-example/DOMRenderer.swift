@@ -74,7 +74,7 @@ internal enum DOMRenderer {
             guard let empty = document.createElement("li").object else { return }
             empty.textContent = .string("No items yet — add one above!")
             empty.className = .string("empty-hint")
-            _ = list.appendChild(empty)
+            _ = list.appendChild?(empty)
             return
         }
 
@@ -101,9 +101,9 @@ internal enum DOMRenderer {
             // Retain on the Swift side for this render cycle.
             todoClosures.append(removeHandler)
 
-            btn.addEventListener("click", removeHandler)
-            _ = li.appendChild(btn)
-            _ = list.appendChild(li)
+            _ = btn.addEventListener?("click", removeHandler)
+            _ = li.appendChild?(btn)
+            _ = list.appendChild?(li)
         }
     }
 }

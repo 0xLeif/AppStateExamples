@@ -25,6 +25,7 @@ internal struct TodoListView: View {
     @State private var newTitle: String = ""
     @State private var insertError: String? = nil
     @State private var showInsertError: Bool = false
+    @FocusState private var isNewTitleFocused: Bool
 
     // MARK: Body
 
@@ -60,6 +61,7 @@ internal struct TodoListView: View {
         Section {
             HStack {
                 TextField("New item title", text: $newTitle)
+                    .focused($isNewTitleFocused)
                     .accessibilityIdentifier("NewItemField")
                 Button("Add") {
                     addItem()
@@ -110,6 +112,7 @@ internal struct TodoListView: View {
         guard !title.isEmpty else { return }
         $todos.insert(TodoItem(title: title))
         newTitle = ""
+        isNewTitleFocused = false
     }
 
     private func deleteItems(at indexSet: IndexSet) {
@@ -154,6 +157,7 @@ private struct TodoRowView: View {
                     item.isCompleted.toggle()
                 }
                 .accessibilityLabel(item.isCompleted ? "Mark incomplete" : "Mark complete")
+                .accessibilityIdentifier("TodoCompletionToggle")
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.title)

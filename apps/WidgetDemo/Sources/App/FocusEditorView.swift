@@ -1,6 +1,7 @@
 import SwiftUI
 import AppState
 import WidgetKit
+import WidgetDemoCore
 
 // MARK: - Focus Editor View
 
@@ -52,6 +53,7 @@ internal struct FocusEditorView: View {
                 Text("\(focusCount)")
                     .monospacedDigit()
                     .foregroundStyle(.primary)
+                    .accessibilityIdentifier("FocusCountValue")
             }
         } header: {
             Text("Focus Count")

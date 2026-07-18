@@ -38,18 +38,27 @@ Build and run the `MenuBarDemo` scheme. A sparkle icon appears in your menu bar.
 
 `@SecureState(\.apiToken)` stores an optional `String` in the **login Keychain** — never in `UserDefaults` or any plain file.
 
+- The section does not instantiate `@SecureState` or read the Keychain when the popover opens. Tap **Enable Keychain Demo**
+  to opt in first.
+- macOS may request the login Keychain password if a saved item came from an older local build with a different code
+  signature. The opt-in screen explains this before any access occurs.
 - Type a token, tap **Save**; the value is written to the Keychain entry `menuBarDemoApiToken`.
 - The UI always shows a masked dot-string; the **Reveal token** toggle switches between `SecureField` and `TextField` for the draft only.
 - **Clear** sets the state to `nil`, which deletes the Keychain entry.
 
 > Note: Keychain operations work without any special entitlement in debug builds. Distribution builds require the `Keychain Sharing` entitlement or a provisioning profile that includes it.
 
+Snapshot and unit-test hosts intentionally inject a fixture into the secure-token presentation. They never read, write,
+or request access to the developer's login Keychain. Normal signed app launches use live `@SecureState` only after the
+user explicitly enables the demo.
+
 ### @SyncState — iCloud-synced accent
 
 `@SyncState(\.accentName)` reads and writes `NSUbiquitousKeyValueStore`. Selecting a different accent in the Picker propagates to every Mac and iPhone signed into the same iCloud account.
 
 - The colour swatch updates immediately; the raw iCloud KV value is shown below.
-- Full cross-device sync requires an **iCloud-capable** signing configuration (Team + iCloud KV entitlement). The state still stores and restores locally without it.
+- Full cross-device sync requires an **iCloud-capable** signing configuration (Team + iCloud KV entitlement).
+- Without that entitlement, touching `NSUbiquitousKeyValueStore` aborts the process (`BUG IN CLIENT OF KVS`), so at launch the app detects the missing entitlement and overrides AppState's `icloudStore` dependency with a local stand-in (`Application.useLocalSyncStoreIfNeeded()`). The value then stores and restores locally via the `SyncState` `UserDefaults` fallback, and the section subtitle says "Local fallback".
 
 ### @AppDependency + Application.override — Hot-swap service
 
@@ -72,6 +81,7 @@ Sources/
   Application/
     Application+State.swift         — clickCount, greeting
     Application+SecureSync.swift    — apiToken (Keychain), accentName (iCloud KV)
+    Application+SyncFallback.swift  — local iCloud-KV fallback when the entitlement is absent
     Application+Dependencies.swift  — greetingService dependency
   Models/
     GreetingService.swift    — GreetingProviding protocol, Live + Mock implementations
@@ -95,4 +105,11 @@ Sources/
 - Swift 6.0
 - [xcodegen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`)
 
-The package dependency (`AppState` exact `3.0.0-rc.1`) is resolved automatically by Xcode on first open.
+The package dependency (`AppState` exact `3.0.1`) is resolved automatically by Xcode on first open.
+
+## Verification
+
+From the repository root, `fledge run test-apple-apps` runs service/state behavior tests plus twelve macOS image
+regressions covering the complete light-mode popover, every accent branch, and shared components. The latest run covered
+91.86% of `MenuBarDemo.app`; CI enforces an 85% minimum. Untested lines are primarily destructive/termination button
+closures that image tests render but deliberately do not invoke.
