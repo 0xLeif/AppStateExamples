@@ -47,6 +47,8 @@ targets:
       - path: Sources/App
     dependencies:
       - target: WidgetDemoCore
+      - target: WidgetDemoWidget
+        embed: true
       - package: AppState
         product: AppState
     settings:

@@ -57,7 +57,8 @@ user explicitly enables the demo.
 `@SyncState(\.accentName)` reads and writes `NSUbiquitousKeyValueStore`. Selecting a different accent in the Picker propagates to every Mac and iPhone signed into the same iCloud account.
 
 - The colour swatch updates immediately; the raw iCloud KV value is shown below.
-- Full cross-device sync requires an **iCloud-capable** signing configuration (Team + iCloud KV entitlement). The state still stores and restores locally without it.
+- Full cross-device sync requires an **iCloud-capable** signing configuration (Team + iCloud KV entitlement).
+- Without that entitlement, touching `NSUbiquitousKeyValueStore` aborts the process (`BUG IN CLIENT OF KVS`), so at launch the app detects the missing entitlement and overrides AppState's `icloudStore` dependency with a local stand-in (`Application.useLocalSyncStoreIfNeeded()`). The value then stores and restores locally via the `SyncState` `UserDefaults` fallback, and the section subtitle says "Local fallback".
 
 ### @AppDependency + Application.override — Hot-swap service
 
@@ -80,6 +81,7 @@ Sources/
   Application/
     Application+State.swift         — clickCount, greeting
     Application+SecureSync.swift    — apiToken (Keychain), accentName (iCloud KV)
+    Application+SyncFallback.swift  — local iCloud-KV fallback when the entitlement is absent
     Application+Dependencies.swift  — greetingService dependency
   Models/
     GreetingService.swift    — GreetingProviding protocol, Live + Mock implementations
