@@ -15,19 +15,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Pin a Swift toolchain that has a matching SwiftWasm SDK release (the action
-      # derives the SDK tag from the active Swift version; the runner's preinstalled
-      # bleeding-edge Swift has no SwiftWasm release yet). See https://book.swiftwasm.org.
+      # SwiftWasm first ships Observation in its Swift 6.3 SDK. Pin the compiler and
+      # SDK to the exact same official snapshot so AppState 3 cross-compiles reproducibly.
       - name: Set up Swift
-        uses: swift-actions/setup-swift@v2
+        uses: swift-actions/setup-swift@v3
         with:
-          swift-version: '6.0.3'
+          swift-version: '6.3-snapshot-2026-06-11'
 
       - name: Set up SwiftWasm
+        id: swiftwasm
         uses: swiftwasm/setup-swiftwasm@v2
+        with:
+          tag: swift-6.3-DEVELOPMENT-SNAPSHOT-2026-06-11-a
+          target: wasm32-unknown-wasip1
 
-      - name: Build for wasm32-unknown-wasi
-        run: swift build --swift-sdk wasm32-unknown-wasi
+      - name: Build for wasm32-unknown-wasip1
+        run: swift build --swift-sdk "${{ steps.swiftwasm.outputs.swift-sdk-id }}"
         working-directory: packages/wasm
 
   wasm-core-host:
@@ -37,9 +40,9 @@ jobs:
     name: WASMCore (host)
     runs-on: ubuntu-latest
     steps:
-      - uses: swift-actions/setup-swift@v2
+      - uses: swift-actions/setup-swift@v3
         with:
-          swift-version: '6.1.0'
+          swift-version: '6.0.3'
       - uses: actions/checkout@v4
       - name: Test WASMCore
         run: swift test

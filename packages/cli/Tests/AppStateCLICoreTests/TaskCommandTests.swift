@@ -22,7 +22,7 @@ internal final class TaskCommandTests: XCTestCase {
     // MARK: - add
 
     @MainActor
-    internal func testAddCreatesItem() {
+    internal func testAddCreatesItem() async {
         let result = TaskCommands.add(title: "Write tests")
         XCTAssertTrue(result.contains("Added task [1]"))
         XCTAssertTrue(result.contains("Write tests"))
@@ -34,7 +34,7 @@ internal final class TaskCommandTests: XCTestCase {
     }
 
     @MainActor
-    internal func testAddMultipleItems() {
+    internal func testAddMultipleItems() async {
         _ = TaskCommands.add(title: "First")
         _ = TaskCommands.add(title: "Second")
         _ = TaskCommands.add(title: "Third")
@@ -44,7 +44,7 @@ internal final class TaskCommandTests: XCTestCase {
     }
 
     @MainActor
-    internal func testAddEmptyTitleReturnsError() {
+    internal func testAddEmptyTitleReturnsError() async {
         let result = TaskCommands.add(title: "   ")
         XCTAssertTrue(result.lowercased().contains("error"))
 
@@ -53,7 +53,7 @@ internal final class TaskCommandTests: XCTestCase {
     }
 
     @MainActor
-    internal func testAddIncrementsLifetimeCounter() {
+    internal func testAddIncrementsLifetimeCounter() async {
         _ = TaskCommands.add(title: "Item A")
         _ = TaskCommands.add(title: "Item B")
 
@@ -62,7 +62,7 @@ internal final class TaskCommandTests: XCTestCase {
     }
 
     @MainActor
-    internal func testAddTrimsWhitespace() {
+    internal func testAddTrimsWhitespace() async {
         let result = TaskCommands.add(title: "  Trim me  ")
         let items = Application.fileState(\.items).value ?? []
 
@@ -73,13 +73,13 @@ internal final class TaskCommandTests: XCTestCase {
     // MARK: - list
 
     @MainActor
-    internal func testListEmptyReturnsHint() {
+    internal func testListEmptyReturnsHint() async {
         let result = TaskCommands.list()
         XCTAssertTrue(result.contains("No tasks yet"))
     }
 
     @MainActor
-    internal func testListShowsAllItems() {
+    internal func testListShowsAllItems() async {
         _ = TaskCommands.add(title: "Alpha")
         _ = TaskCommands.add(title: "Beta")
 
@@ -90,7 +90,7 @@ internal final class TaskCommandTests: XCTestCase {
     }
 
     @MainActor
-    internal func testListShowsCompletedMarkerAndLifetimeTotal() {
+    internal func testListShowsCompletedMarkerAndLifetimeTotal() async {
         _ = TaskCommands.add(title: "Complete me")
         _ = TaskCommands.done(index: 1)
 
@@ -103,7 +103,7 @@ internal final class TaskCommandTests: XCTestCase {
     // MARK: - done
 
     @MainActor
-    internal func testDoneMarksItemComplete() {
+    internal func testDoneMarksItemComplete() async {
         _ = TaskCommands.add(title: "Ship it")
 
         let result = TaskCommands.done(index: 1)
@@ -115,7 +115,7 @@ internal final class TaskCommandTests: XCTestCase {
     }
 
     @MainActor
-    internal func testDoneOutOfRangeReturnsError() {
+    internal func testDoneOutOfRangeReturnsError() async {
         _ = TaskCommands.add(title: "Only item")
 
         let result = TaskCommands.done(index: 99)
@@ -123,7 +123,7 @@ internal final class TaskCommandTests: XCTestCase {
     }
 
     @MainActor
-    internal func testDoneAlreadyCompleteReturnsMessage() {
+    internal func testDoneAlreadyCompleteReturnsMessage() async {
         _ = TaskCommands.add(title: "Repeat done")
         _ = TaskCommands.done(index: 1)
 
@@ -132,7 +132,7 @@ internal final class TaskCommandTests: XCTestCase {
     }
 
     @MainActor
-    internal func testDoneClearsMatchingSelectionOnly() {
+    internal func testDoneClearsMatchingSelectionOnly() async {
         _ = TaskCommands.add(title: "First")
         _ = TaskCommands.add(title: "Second")
         _ = TaskCommands.select(index: 2)
@@ -145,7 +145,7 @@ internal final class TaskCommandTests: XCTestCase {
     }
 
     @MainActor
-    internal func testDoneRejectsZeroAndNegativeIndices() {
+    internal func testDoneRejectsZeroAndNegativeIndices() async {
         _ = TaskCommands.add(title: "Only")
 
         XCTAssertTrue(TaskCommands.done(index: 0).contains("Error"))
@@ -155,7 +155,7 @@ internal final class TaskCommandTests: XCTestCase {
     // MARK: - select
 
     @MainActor
-    internal func testSelectSetsAndClearsSelection() {
+    internal func testSelectSetsAndClearsSelection() async {
         _ = TaskCommands.add(title: "Selectable")
 
         XCTAssertEqual(TaskCommands.select(index: 1), "Selected task 1: Selectable")
@@ -165,7 +165,7 @@ internal final class TaskCommandTests: XCTestCase {
     }
 
     @MainActor
-    internal func testSelectRejectsOutOfRangeIndicesWithoutChangingSelection() {
+    internal func testSelectRejectsOutOfRangeIndicesWithoutChangingSelection() async {
         _ = TaskCommands.add(title: "Selectable")
         _ = TaskCommands.select(index: 1)
 
@@ -177,7 +177,7 @@ internal final class TaskCommandTests: XCTestCase {
     // MARK: - clear
 
     @MainActor
-    internal func testClearRemovesAllItems() {
+    internal func testClearRemovesAllItems() async {
         _ = TaskCommands.add(title: "A")
         _ = TaskCommands.add(title: "B")
 
@@ -189,7 +189,7 @@ internal final class TaskCommandTests: XCTestCase {
     }
 
     @MainActor
-    internal func testClearResetsSelectedIndex() {
+    internal func testClearResetsSelectedIndex() async {
         _ = TaskCommands.add(title: "Selected one")
         _ = TaskCommands.select(index: 1)
         XCTAssertEqual(Application.state(\.selectedItemIndex).value, 1)
@@ -199,14 +199,14 @@ internal final class TaskCommandTests: XCTestCase {
     }
 
     @MainActor
-    internal func testClearEmptyCollectionReportsZero() {
+    internal func testClearEmptyCollectionReportsZero() async {
         XCTAssertEqual(TaskCommands.clear(), "Cleared 0 task(s).")
     }
 
     // MARK: - stats
 
     @MainActor
-    internal func testStatsCoversCompletedAndUnselectedState() {
+    internal func testStatsCoversCompletedAndUnselectedState() async {
         _ = TaskCommands.add(title: "Done")
         _ = TaskCommands.add(title: "Open")
         _ = TaskCommands.done(index: 1)

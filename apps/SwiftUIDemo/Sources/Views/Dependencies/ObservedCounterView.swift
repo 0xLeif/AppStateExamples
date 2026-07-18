@@ -40,8 +40,10 @@ internal struct ObservedCounterView: View {
                 .accessibilityIdentifier("ResetServiceButton")
             } footer: {
                 Text(
-                    "The service is a shared singleton via `@AppDependency`/`@ObservedDependency` — "
-                        + "its state persists as long as the app runs."
+                    """
+                    The service is a shared singleton via `@AppDependency`/`@ObservedDependency` — \
+                    its state persists as long as the app runs.
+                    """
                 )
             }
         }

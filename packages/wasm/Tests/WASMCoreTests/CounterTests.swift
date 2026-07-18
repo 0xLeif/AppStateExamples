@@ -10,12 +10,12 @@ import Observation
 /// These run on the **host** toolchain (macOS / Linux) because `WASMCore`
 /// has no JavaScriptKit dependency.  They validate the pure logic layer
 /// independently of the browser environment.
-final class CounterTests: XCTestCase {
+internal final class CounterTests: XCTestCase {
 
     // MARK: - Setup
 
     @MainActor
-    override func setUp() async throws {
+    internal override func setUp() async throws {
         var counter = Application.state(\.counter)
         counter.value = 0
     }
@@ -23,13 +23,13 @@ final class CounterTests: XCTestCase {
     // MARK: - Increment
 
     @MainActor
-    func testIncrementRaisesCounter() {
+    internal func testIncrementRaisesCounter() async {
         AppActions.increment()
         XCTAssertEqual(Application.state(\.counter).value, 1)
     }
 
     @MainActor
-    func testIncrementIsAdditive() {
+    internal func testIncrementIsAdditive() async {
         AppActions.increment()
         AppActions.increment()
         AppActions.increment()
@@ -39,7 +39,7 @@ final class CounterTests: XCTestCase {
     // MARK: - Decrement
 
     @MainActor
-    func testDecrementLowersCounter() {
+    internal func testDecrementLowersCounter() async {
         var counter = Application.state(\.counter)
         counter.value = 5
         AppActions.decrement()
@@ -47,7 +47,7 @@ final class CounterTests: XCTestCase {
     }
 
     @MainActor
-    func testDecrementBelowZeroIsAllowed() {
+    internal func testDecrementBelowZeroIsAllowed() async {
         AppActions.decrement()
         XCTAssertEqual(Application.state(\.counter).value, -1)
     }
@@ -55,7 +55,7 @@ final class CounterTests: XCTestCase {
     // MARK: - Reset
 
     @MainActor
-    func testResetReturnsCounterToZeroFromPositive() {
+    internal func testResetReturnsCounterToZeroFromPositive() async {
         var counter = Application.state(\.counter)
         counter.value = 42
         AppActions.resetCounter()
@@ -63,7 +63,7 @@ final class CounterTests: XCTestCase {
     }
 
     @MainActor
-    func testResetReturnsCounterToZeroFromNegative() {
+    internal func testResetReturnsCounterToZeroFromNegative() async {
         var counter = Application.state(\.counter)
         counter.value = -7
         AppActions.resetCounter()
@@ -91,7 +91,7 @@ final class CounterTests: XCTestCase {
     // MARK: - Dependency injection via override
 
     @MainActor
-    func testInjectedFormatterIsUsedByCounterLabel() async {
+    internal func testInjectedFormatterIsUsedByCounterLabel() async {
         let mockFormatter = MockFormatter(fixedLabel: "TEST_LABEL")
         let token = Application.override(\.counterFormatter, with: mockFormatter)
 
@@ -104,7 +104,7 @@ final class CounterTests: XCTestCase {
     }
 
     @MainActor
-    func testOverrideCancellationRestoresLiveFormatter() async {
+    internal func testOverrideCancellationRestoresLiveFormatter() async {
         let mockFormatter = MockFormatter(fixedLabel: "MOCK")
         let token = Application.override(\.counterFormatter, with: mockFormatter)
         await token.cancel()  // Immediately restore.
@@ -123,7 +123,7 @@ final class CounterTests: XCTestCase {
     // dependency logic above is exercised on every platform.
     #if !os(Linux) && !os(Windows)
     @MainActor
-    func testCounterChangeFiresObservationCallback() {
+    internal func testCounterChangeFiresObservationCallback() async {
         let fired = FiredBox()
 
         withObservationTracking {

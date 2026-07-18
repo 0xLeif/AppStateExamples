@@ -18,9 +18,9 @@ jobs:
         package: [cli, observability, vapor-example, wasm, tui, testing-showcase]
     steps:
       # Use the toolchain action so every package sees the same supported Swift release.
-      - uses: swift-actions/setup-swift@v2
+      - uses: swift-actions/setup-swift@v3
         with:
-          swift-version: '6.1.0'
+          swift-version: '6.0.3'
       - uses: actions/checkout@v4
       - name: Build
         run: swift build

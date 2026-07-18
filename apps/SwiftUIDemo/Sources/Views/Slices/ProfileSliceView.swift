@@ -71,8 +71,10 @@ internal struct ProfileSliceView: View {
                 Text("@OptionalSlice — Profile.displayName (optional root)")
             } footer: {
                 Text(
-                    "`@OptionalSlice` returns `nil` when the root optional state has no value — "
-                        + "no crash, no force-unwrap."
+                    """
+                    `@OptionalSlice` returns `nil` when the root optional state has no value — \
+                    no crash, no force-unwrap.
+                    """
                 )
             }
 

@@ -6,10 +6,10 @@ import AppState
 
 /// Verifies that items persisted via `FileState` survive a simulated
 /// "restart" by reading the state back through the same Application key.
-final class FileStateRoundTripTests: XCTestCase {
+internal final class FileStateRoundTripTests: XCTestCase {
 
     @MainActor
-    override func setUp() async throws {
+    internal override func setUp() async throws {
         var itemsState = Application.fileState(\.items)
         itemsState.value = []
         var counterState = Application.storedState(\.totalItemsAdded)
@@ -19,7 +19,7 @@ final class FileStateRoundTripTests: XCTestCase {
     // MARK: - Round-trip
 
     @MainActor
-    func testItemsPersistAndReload() throws {
+    internal func testItemsPersistAndReload() async throws {
         // Write items through the command layer.
         _ = TaskCommands.add(title: "Persisted item 1")
         _ = TaskCommands.add(title: "Persisted item 2")
@@ -42,7 +42,7 @@ final class FileStateRoundTripTests: XCTestCase {
     }
 
     @MainActor
-    func testClearWipesFileState() {
+    internal func testClearWipesFileState() async {
         _ = TaskCommands.add(title: "To be cleared")
         _ = TaskCommands.clear()
 
