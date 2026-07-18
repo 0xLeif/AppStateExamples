@@ -17,6 +17,8 @@ jobs:
 
       # SwiftWasm first ships Observation in its Swift 6.3 SDK. Pin the compiler and
       # SDK to the exact same official snapshot so AppState 3 cross-compiles reproducibly.
+      - name: Import Swift signing keys
+        run: curl --fail --silent --show-error --location --compressed https://www.swift.org/keys/all-keys.asc | gpg --import -
       - name: Set up Swift
         uses: swift-actions/setup-swift@v3
         with:
@@ -40,6 +42,8 @@ jobs:
     name: WASMCore (host)
     runs-on: ubuntu-latest
     steps:
+      - name: Import Swift signing keys
+        run: curl --fail --silent --show-error --location --compressed https://www.swift.org/keys/all-keys.asc | gpg --import -
       - uses: swift-actions/setup-swift@v3
         with:
           swift-version: '6.0.3'

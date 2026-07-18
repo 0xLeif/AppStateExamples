@@ -17,6 +17,8 @@ jobs:
         # do not appear here. The packages below use only the cross-platform core.
         package: [cli, observability, vapor-example, wasm, tui, testing-showcase]
     steps:
+      - name: Import Swift signing keys
+        run: curl --fail --silent --show-error --location --compressed https://www.swift.org/keys/all-keys.asc | gpg --import -
       # Use the toolchain action so every package sees the same supported Swift release.
       - uses: swift-actions/setup-swift@v3
         with:
