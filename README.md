@@ -98,14 +98,15 @@ The checked-in gates measure production targets, not test bundles. The latest fu
 | Vapor core | 95.06% | 90% |
 | WASM core | 100.00% | 100% |
 | SwiftUIDemo app | 98.89% | 95% |
-| MenuBarDemo app | 88.85% | 85% |
+| MenuBarDemo app | 91.86% | 85% |
 | Pomodoro app | 96.00% | 95% |
 | WidgetDemo host app | 100.00% | 95% |
 | WidgetDemo shared core | 98.03% | 95% |
 
 The tiny WidgetKit extension entry point is compile-gated; its timeline source and every widget layout live in the
 98.03%-covered shared core. Menu-bar snapshots inject a secure-state fixture, so automated tests never access or prompt
-for the developer's login Keychain. The signed production app continues to use live `SecureState`.
+for the developer's login Keychain. The signed production app creates live `SecureState` only after the user explicitly
+enables the Keychain demo.
 
 ## Platform support
 

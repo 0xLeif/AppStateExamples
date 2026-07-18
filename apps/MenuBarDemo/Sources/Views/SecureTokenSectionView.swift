@@ -9,36 +9,152 @@ internal enum SecureTokenPresentation: Sendable, Equatable {
     case fixture(String?)
 }
 
+
 // MARK: - SecureTokenSectionView
 
-/// Demonstrates `@SecureState` — a `String?` backed by the system login Keychain.
-///
-/// The token is always masked in the UI; only its presence or absence is surfaced.
-/// Saving writes to the Keychain; clearing deletes the Keychain entry.
+/// Introduces the `@SecureState` example without reading the login Keychain on launch.
 internal struct SecureTokenSectionView: View {
 
-    // MARK: Properties
+    // MARK: - Properties
 
     private let presentation: SecureTokenPresentation
 
-    // MARK: State
+    // MARK: - State
 
-    @SecureState(\.apiToken) private var apiToken: String?
+    @State private var isKeychainAccessEnabled: Bool = false
 
-    @State private var tokenDraft: String = ""
-    @State private var isRevealed: Bool = false
-
-    // MARK: Initializer
+    // MARK: - Initializer
 
     /// Creates a secure-token section.
-    /// - Parameter presentation: Uses the live Keychain by default; tests provide a fixture.
+    /// - Parameter presentation: Uses opt-in live Keychain access by default; tests provide an in-memory fixture.
     internal init(presentation: SecureTokenPresentation = .live) {
         self.presentation = presentation
     }
 
-    // MARK: Body
+    // MARK: - Body
 
+    @ViewBuilder
     internal var body: some View {
+        switch presentation {
+        case .live:
+            if isKeychainAccessEnabled {
+                LiveSecureTokenEditorView()
+            } else {
+                SecureTokenOptInView {
+                    isKeychainAccessEnabled = true
+                }
+            }
+        case .fixture(let token):
+            FixtureSecureTokenEditorView(token: token)
+        }
+    }
+}
+
+
+// MARK: - Opt-In View
+
+/// Explains system Keychain access before the live property wrapper is created.
+private struct SecureTokenOptInView: View {
+
+    // MARK: - Properties
+
+    private let enableAccess: () -> Void
+
+    // MARK: - Initializer
+
+    fileprivate init(enableAccess: @escaping () -> Void) {
+        self.enableAccess = enableAccess
+    }
+
+    // MARK: - Body
+
+    fileprivate var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            SectionHeaderView(
+                title: "@SecureState",
+                subtitle: "Login Keychain — access is off until you enable this demo"
+            )
+
+            Label("This app has not accessed your Keychain.", systemImage: "lock.shield")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Button("Enable Keychain Demo", action: enableAccess)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+                .accessibilityIdentifier("EnableKeychainDemoButton")
+
+            Text("macOS may request your login password when an older local build created the saved item.")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+}
+
+
+// MARK: - Live Storage
+
+/// Owns the live property wrapper only after the user opts in to Keychain access.
+private struct LiveSecureTokenEditorView: View {
+
+    // MARK: - State
+
+    @SecureState(\.apiToken) private var apiToken: String?
+
+    // MARK: - Body
+
+    fileprivate var body: some View {
+        SecureTokenEditorView(token: $apiToken)
+    }
+}
+
+
+// MARK: - Fixture Storage
+
+/// Keeps snapshot and unit-test values in memory so automated tests never touch the Keychain.
+private struct FixtureSecureTokenEditorView: View {
+
+    // MARK: - State
+
+    @State private var token: String?
+
+    // MARK: - Initializer
+
+    fileprivate init(token: String?) {
+        _token = State(initialValue: token)
+    }
+
+    // MARK: - Body
+
+    fileprivate var body: some View {
+        SecureTokenEditorView(token: $token)
+    }
+}
+
+
+// MARK: - Token Editor
+
+/// Edits either the live Keychain value or an in-memory test fixture through the same UI.
+private struct SecureTokenEditorView: View {
+
+    // MARK: - State
+
+    @Binding private var token: String?
+    @State private var tokenDraft: String = ""
+    @State private var isRevealed: Bool = false
+
+    // MARK: - Initializer
+
+    fileprivate init(token: Binding<String?>) {
+        _token = token
+    }
+
+    // MARK: - Body
+
+    fileprivate var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             SectionHeaderView(
                 title: "@SecureState",
@@ -60,14 +176,14 @@ internal struct SecureTokenSectionView: View {
 
             HStack {
                 Button("Save") {
-                    apiToken = tokenDraft.isEmpty ? nil : tokenDraft
+                    token = tokenDraft.isEmpty ? nil : tokenDraft
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.small)
 
-                if presentedToken != nil {
+                if token != nil {
                     Button("Clear", role: .destructive) {
-                        apiToken = nil
+                        token = nil
                         tokenDraft = ""
                     }
                     .buttonStyle(.bordered)
@@ -83,15 +199,15 @@ internal struct SecureTokenSectionView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .onAppear {
-            tokenDraft = presentedToken ?? ""
+            tokenDraft = token ?? ""
         }
     }
 
-    // MARK: Private Views
+    // MARK: - Private Views
 
     @ViewBuilder
     private var keychainStatusBadge: some View {
-        if let token = presentedToken {
+        if let token {
             Label(
                 String(repeating: "•", count: min(token.count, 8)),
                 systemImage: "lock.fill"
@@ -102,17 +218,6 @@ internal struct SecureTokenSectionView: View {
             Label("not set", systemImage: "lock.open")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-        }
-    }
-
-    // MARK: Private Values
-
-    private var presentedToken: String? {
-        switch presentation {
-        case .live:
-            return apiToken
-        case .fixture(let token):
-            return token
         }
     }
 }

@@ -10,6 +10,14 @@ import SnapshotTesting
 /// Image regression coverage for the complete popover and meaningful state variants.
 @MainActor
 internal final class MenuBarDemoSnapshotTests: XCTestCase {
+    internal func testKeychainAccessIsOptInByDefault() {
+        assertViewSnapshot(
+            of: SecureTokenSectionView(),
+            size: CGSize(width: 340, height: 180),
+            named: "keychain-opt-in"
+        )
+    }
+
     internal func testCompletePopover() {
         seed(count: 3, greeting: "Ship AppState 3", accent: "Purple")
         assertViewSnapshot(
