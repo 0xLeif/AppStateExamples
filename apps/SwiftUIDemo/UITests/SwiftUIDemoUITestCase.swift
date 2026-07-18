@@ -35,6 +35,22 @@ internal class SwiftUIDemoUITestCase: XCTestCase {
     internal func tapSwitch(_ element: XCUIElement) {
         XCTAssertTrue(element.waitForExistence(timeout: 5))
         XCTAssertTrue(element.isHittable)
-        element.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+        guard let initialValue = element.value as? String else {
+            element.tap()
+            return
+        }
+
+        let expectedValue = initialValue == "1" ? "0" : "1"
+        element.tap()
+        if !hasValue(element, equalTo: expectedValue, timeout: 1) {
+            element.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+            XCTAssertTrue(hasValue(element, equalTo: expectedValue, timeout: 5))
+        }
+    }
+
+    private func hasValue(_ element: XCUIElement, equalTo value: String, timeout: TimeInterval) -> Bool {
+        let predicate = NSPredicate(format: "value == %@", value)
+        let valueExpectation = XCTNSPredicateExpectation(predicate: predicate, object: element)
+        return XCTWaiter.wait(for: [valueExpectation], timeout: timeout) == .completed
     }
 }
